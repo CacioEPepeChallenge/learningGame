@@ -15,7 +15,9 @@ enum TileKind {
     case walkable
     case blocked
     case interactable(id: Int)
+    case touchpoint(id: Int)
 }
+
 
 struct DialogLine {
     let speaker: String
@@ -25,5 +27,4 @@ struct DialogLine {
         speaker == "IRIS" ? "iris_dialogue" : "mc_head"
     }
 }
-
 

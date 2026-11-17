@@ -19,7 +19,8 @@ struct ContentView: View {
             SpriteView(scene: game.currentScene,
                        transition: .fade(withDuration: 0.5),
                        debugOptions: [.showsFPS, .showsNodeCount])
-                .ignoresSafeArea()
+            .ignoresSafeArea()
+            .onAppear{ game.playIntro() }
 
             if game.currentRoom != nil {
                 Button("Back") { game.currentRoom = nil }
@@ -28,14 +29,28 @@ struct ContentView: View {
             }
             
             if game.overlayRoom == .scene2 {
-                Scene2Panel(onClose: game.closeOverlay)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                Scene2Panel(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
             
             if game.isDialogActive {
                 DialogBox(line: game.dialogLines[game.dialogIndex],
                           isLast: game.dialogIndex == game.dialogLines.count - 1,
                           onNext: game.nextLine)
+            }
+            
+
+            
+            if let id = game.activeTouchpoint,
+               let prompt = game.touchpointPrompts[id] {
+                TouchpointPrompt(
+                    line: DialogLine(speaker: "IRIS", text: prompt.text),
+                    onConfirm: { game.confirmTouchpoint() },
+                    onCancel: { game.cancelTouchpoint() }
+                )
             }
         }
     }
