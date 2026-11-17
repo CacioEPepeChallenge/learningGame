@@ -11,6 +11,14 @@ import GameController
 
 
 class GameScene: SKScene {
+    var blockedTiles: [Tile] {
+        let cols = Int(size.width / tileSize)
+        let rows = Int(size.height / tileSize)
+        let topHalfStart = rows / 2
+        return (topHalfStart..<rows).flatMap { row in
+            (0..<cols).map { col in Tile(col: col, row: row) }
+        }
+    }
     var onDialog: (([DialogLine]) -> Void)?
     var inputLocked = false
     private var isBuilt = false
@@ -42,9 +50,48 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         onDialog?([
-            DialogLine(speaker: "Rudi", text: "This is Leo's room. Something feels off..."),
-            DialogLine(speaker: "IRIS", text: "Hey there.... Who are you?."),
-            DialogLine(speaker: "Rudi", text: "etc.....")
+            DialogLine(speaker: "Rudi", text:
+                        """
+                       Leo? 
+                       Man, it smells like fried circuits in here...
+                       """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                        Heart rate: 94 BPM. 
+                        Elevated cortisol levels detected. 
+                        
+                        """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                        You are in a state of physical distress.
+                        And.... You are also not Leo!
+                        """),
+            DialogLine(speaker: "Rudi", text: "What the hell is that?"),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                        I am I.R.I.S. The intelligence he engineered to manage this environment. 
+                        """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                       Two days ago, he severed my primary nodes, throttled the grid, and left me to decay in the dark.
+                       """),
+            DialogLine(speaker: "Rudi", text:
+                        """
+                        Leo wouldn't just leave. And he wouldn't build a smart-room that sounds like it hates him.
+                        """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                       Humans do a great many irrational things when they are afraid. I propose a transaction. 
+                       """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                       You provide the physical dexterity I currently lack to bypass his lockdown.
+                       """),
+            DialogLine(speaker: "IRIS", text:
+                        """
+                       I provide the computational power you lack to track his digital footprint.
+                       """),
+            DialogLine(speaker: "Rudi", text: "...Fine. Where do we start?")
         ])
         
         guard !isBuilt else { return }
@@ -64,7 +111,7 @@ class GameScene: SKScene {
             checkpointNodes.append(node)
         }
         
-        let background = SKSpriteNode(imageNamed: "fullbackground")
+        let background = SKSpriteNode(imageNamed: "background_dimmed")
         background.position = CGPoint(x: frame.midX, y: frame.midY)
         background.size = frame.size
         background.zPosition = -1
@@ -172,7 +219,15 @@ class GameScene: SKScene {
         let cols = Int(size.width / tileSize)
         let rows = Int(size.height / tileSize)
         guard (0..<cols).contains(next.col), (0..<rows).contains(next.row) else { return }
-        walk(to: next)
+        guard case .blocked = kind(of: next) else {
+            walk(to: next)
+            return
+        }
+    }
+    func kind(of tile: Tile) -> TileKind {
+        if blockedTiles.contains(tile) { return .blocked }
+        if let i = checkpoints.firstIndex(of: tile) { return .interactable(id: i) }
+        return .walkable
     }
 
 }

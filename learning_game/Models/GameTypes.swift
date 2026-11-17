@@ -10,7 +10,20 @@ struct Tile: Equatable {
     var col: Int
     var row: Int
 }
+
+enum TileKind {
+    case walkable
+    case blocked
+    case interactable(id: Int)
+}
+
 struct DialogLine {
     let speaker: String
     let text: String
+
+    var image: String {
+        speaker == "IRIS" ? "iris_dialogue" : "mc_head"
+    }
 }
+
+

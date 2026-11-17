@@ -41,59 +41,7 @@ struct ContentView: View {
     }
 }
 
-struct DialogBox: View {
-    let line: DialogLine
-    let isLast: Bool
-    let onNext: () -> Void
-    var body: some View {
-        GeometryReader { geo in
-            VStack {
-                Spacer()
-                HStack {
-                    Text(line.speaker)
-                        .font(.system(.headline, design: .monospaced))
-                        .foregroundStyle(.yellow)
-                    Text(line.text)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.white)
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(isLast ? "Close" : "Next", action: onNext)
-                            .font(.system(.subheadline, design: .monospaced).bold())
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 14).padding(.vertical, 6)
-                            .background(.white)
-                    }
-                }
-                .padding()
-                .frame(width: geo.size.width - 24, height: geo.size.height * 0.25)
-                .background(.black.opacity(0.85))
-            }
-        }
-    }
-}
 
 #Preview {
     ContentView()
-}
-
-#Preview("Interactive") {
-    @Previewable @State var index = 0
-    let lines = [
-        DialogLine(speaker: "IRIS", text: "This is Leo's room. Something feels off..."),
-        DialogLine(speaker: "IRIS", text: "Let's look for clues."),
-        DialogLine(speaker: "You", text: "Leo, where did you go?")
-    ]
-
-    ZStack {
-        Color.green.ignoresSafeArea()
-        if index < lines.count {
-            DialogBox(line: lines[index],
-                      isLast: index == lines.count - 1,
-                      onNext: { index += 1 })
-        } else {
-            Button("Restart") { index = 0 }
-        }
-    }
 }
