@@ -9,14 +9,6 @@ import SpriteKit
 import SwiftUI
 import GameController
 
-struct Tile: Equatable {
-    var col: Int
-    var row: Int
-}
-struct DialogLine {
-    let speaker: String
-    let text: String
-}
 
 class GameScene: SKScene {
     var onDialog: (([DialogLine]) -> Void)?
