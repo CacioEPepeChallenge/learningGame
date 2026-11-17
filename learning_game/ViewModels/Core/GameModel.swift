@@ -24,8 +24,8 @@ final class GameModel {
     
     var activeTouchpoint: Int? = nil
     let touchpointPrompts: [Int: (text: String, room: Room)] = [
-         1: ("Leo wiped the boot sequence. We must rewrite it. Let's fix the generator first.", .scene2),
-         2: ("See the lamp....", .scene3)
+         1: ("Leo wiped the boot sequence. Before we rewrite it, we need power. Generator first.", .scene2),
+         2: ("Now the lamp. Hard to code in the dark.", .scene3)
      ]
 
     var inProgressTouchPoint: Int?
