@@ -185,7 +185,7 @@ struct TP1Screen04_VariableOrConstantView: View {
 
 #Preview("Screen 4 · Variable or Constant", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

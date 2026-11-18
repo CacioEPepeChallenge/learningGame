@@ -122,7 +122,7 @@ struct TP1OfflineMonitor: View {
 
 #Preview("Screen 3 · Generator Core", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

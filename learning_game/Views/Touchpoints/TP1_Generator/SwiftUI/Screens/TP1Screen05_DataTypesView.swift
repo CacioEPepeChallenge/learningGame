@@ -223,7 +223,7 @@ struct TP1Screen05_DataTypesView: View {
 
 #Preview("Screens 5–7 · Data Types", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

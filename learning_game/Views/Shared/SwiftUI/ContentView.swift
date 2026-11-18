@@ -37,13 +37,13 @@ struct ContentView: View {
             }
             
             if game.overlayRoom == .scene3 {
-                Scene3Panel(
+                TP2LightsRootView(
                     onClose: game.closeOverlay,
                     onComplete: game.completeOverlay
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .transition(.opacity)
             }
-            
+
             if game.overlayRoom == .scene4 {
                 Scene4Panel(
                     onClose: game.closeOverlay,
@@ -51,7 +51,7 @@ struct ContentView: View {
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
-            
+
             if game.overlayRoom == .scene5 {
                 Scene4Panel(
                     onClose: game.closeOverlay,
@@ -59,7 +59,7 @@ struct ContentView: View {
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
-            
+
             if game.overlayRoom == .scene6 {
                 Scene4Panel(
                     onClose: game.closeOverlay,
