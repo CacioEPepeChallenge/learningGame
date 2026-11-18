@@ -14,6 +14,7 @@ struct DialogBox: View {
     var body: some View {
         GeometryReader { geo in
             VStack {
+                Spacer()
                 HStack {
                     Image(line.image)
                         .resizable()
