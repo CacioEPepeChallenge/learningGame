@@ -18,6 +18,8 @@ struct DialogBox: View {
                 HStack {
                     Image(line.image)
                         .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()          // keep the portrait's proportions (wide sprites aren't squashed)
                         .frame(width: 80, height: 80)
                         .background(.neutralBlack)
                         .cornerRadius(8)

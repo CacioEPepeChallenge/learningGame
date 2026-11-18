@@ -263,7 +263,7 @@ struct TP1Screen10_TypeSafetyView: View {
 
 #Preview("Screen 10 · Type Safety", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

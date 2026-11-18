@@ -142,7 +142,7 @@ struct TP1Screen11_ChooseAnswerView: View {
 
 #Preview("Screen 11 · Choose the Correct Answer", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

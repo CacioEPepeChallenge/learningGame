@@ -35,7 +35,7 @@ struct TP1Screen09_DeclareConstantView: View {
 
 #Preview("Screen 9 · Declaring Constant", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

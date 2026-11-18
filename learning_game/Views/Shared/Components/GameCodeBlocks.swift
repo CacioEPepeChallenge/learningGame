@@ -128,24 +128,50 @@ struct GameChip: View {
 
 // MARK: - Code text
 
-/// Multi-line Swift snippet with `let` / `var` keywords in bold Accent.
+/// Multi-line Swift snippet:
+/// - leading `let` / `var` / `enum` / `case` / `func` / `struct` in bold Accent
+/// - indentation kept, blank lines kept as spacing
+/// - `// comments` (whole line or trailing) in AshGrey
 struct GameCodeText: View {
     let code: String
     var size: CGFloat = 14
+    /// Bold body text (Figma "schematic" code style).
+    var bold: Bool = false
+
+    private static let keywords = ["let ", "var ", "enum ", "case ", "func ", "struct "]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(Array(code.split(separator: "\n").enumerated()), id: \.offset) { _, line in
-                lineView(String(line))
+            ForEach(Array(code.split(separator: "\n", omittingEmptySubsequences: false).enumerated()),
+                    id: \.offset) { _, line in
+                if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Color.clear.frame(height: size * 0.5)
+                } else {
+                    lineView(String(line))
+                }
             }
         }
     }
 
     private func lineView(_ line: String) -> Text {
-        for keyword in ["let ", "var "] where line.hasPrefix(keyword) {
-            let rest = String(line.dropFirst(keyword.count))
-            return Text("\(Text(keyword).font(GameFont.play(size, bold: true)).foregroundStyle(GameColor.accent))\(Text(rest).font(GameFont.play(size)).foregroundStyle(GameColor.white))")
+        let indentCount = line.prefix(while: { $0 == " " }).count
+        let indent = String(repeating: " ", count: indentCount)
+        var rest = String(line.dropFirst(indentCount))
+
+        // Trailing / whole-line comment.
+        var comment = ""
+        if let range = rest.range(of: "//") {
+            comment = String(rest[range.lowerBound...])
+            rest = String(rest[..<range.lowerBound])
         }
-        return Text(line).font(GameFont.play(size)).foregroundStyle(GameColor.white)
+
+        var keyword = ""
+        if let match = Self.keywords.first(where: { rest.hasPrefix($0) }) {
+            keyword = match
+            rest = String(rest.dropFirst(match.count))
+        }
+
+        let body = GameFont.play(size, bold: bold)
+        return Text("\(Text(indent).font(body))\(Text(keyword).font(GameFont.play(size, bold: true)).foregroundStyle(GameColor.accent))\(Text(rest).font(body).foregroundStyle(GameColor.white))\(Text(comment).font(GameFont.play(size)).foregroundStyle(GameColor.ashGrey))")
     }
 }

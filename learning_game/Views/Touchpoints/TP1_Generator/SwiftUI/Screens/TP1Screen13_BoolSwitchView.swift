@@ -332,7 +332,7 @@ struct TP1PumpSwitch: View {
 
 #Preview("Screen 13 · Boolean Switch", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

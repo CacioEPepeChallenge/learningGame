@@ -37,11 +37,11 @@ struct ContentView: View {
             }
             
             if game.overlayRoom == .scene3 {
-                Scene3Panel(
-//                    onClose: game.closeOverlay,
-//                    onComplete: game.completeOverlay
+                TP2LightsRootView(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .transition(.opacity)
             }
 
             
