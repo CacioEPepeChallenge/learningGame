@@ -47,6 +47,7 @@ enum LampState: Hashable {
 
 struct Scene2Panel: View {
     let onClose: () -> Void
+    let onComplete: () -> Void
 
     @State private var wired: [LampPart: SwiftType] = [:]
     @State private var lastWired: LampPart?
@@ -168,7 +169,7 @@ struct Scene2Panel: View {
 
             HStack {
                 Spacer()
-                Button("Done ▶", action: onClose)
+                Button("Done ▶", action: onComplete)
                     .font(.system(size: 17, weight: .semibold, design: .monospaced))
                     .foregroundStyle(allWired ? .black : .gray)
                     .padding(.horizontal, 22).padding(.vertical, 10)
@@ -420,19 +421,29 @@ struct Shake: GeometryEffect {
     }
 }
 
+struct Scene3Panel: View {
+    var body: some View {
+        Text("Scene3")
+    }
+}
+
 // MARK: - Previews
+
+//#Preview(){
+//    Scene3Panel()
+//}
 
 #Preview("Lamp puzzle") {
     ZStack {
         Color.green.ignoresSafeArea()
-        Scene2Panel(onClose: {})
+        Scene2Panel(onClose: {}, onComplete: {})
     }
 }
 
 #Preview("Lamp puzzle – iPhone SE size") {
     ZStack {
         Color.green.ignoresSafeArea()
-        Scene2Panel(onClose: {})
+        Scene2Panel(onClose: {}, onComplete: {})
     }
     .frame(width: 375, height: 667)
 }
