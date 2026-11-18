@@ -421,11 +421,6 @@ struct Shake: GeometryEffect {
     }
 }
 
-struct Scene3Panel: View {
-    var body: some View {
-        Text("Scene3")
-    }
-}
 
 // MARK: - Previews
 

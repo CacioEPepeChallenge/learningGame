@@ -10,7 +10,7 @@ import GameController
 
 
 enum Room: Int {
-    case leo, scene2, scene3, scene4, scene5
+    case leo, scene2, scene3, scene4, scene5, scene6
 }
 
 @Observable
@@ -25,8 +25,19 @@ final class GameModel {
     var activeTouchpoint: Int? = nil
     let touchpointPrompts: [Int: (text: String, room: Room)] = [
          1: ("Leo wiped the boot sequence. Before we rewrite it, we need power. Generator first.", .scene2),
-         2: ("Now the lamp. Hard to code in the dark.", .scene3)
+         2: ("Now the lamp. Hard to code in the dark.", .scene3),
+         3: ("Now the bookself. We need to find some data there.", .scene4),
+         4: ("Now the we need to see the logfiles in the computer.", .scene5),
+         5: ("Last one, we need to open the safe.", .scene6)
      ]
+
+    let touchpointCompletions: [Int: (text: String, nextOverlay: String?, background: String?)] = [
+        1: ("You turned on the generator! let's go to the next one.", "TP2", nil),
+        2: ("The lamp is on. Now we can actually see what Leo left behind.", "TP3", "background_light"),
+        3: ("Great! you have managed the files", "TP4", "background_light"),
+        4: ("Great! you have managed the Logs", "TP5", "background_light"),
+        5: ("Great! you have opened the safe", "TP6", "background_light")
+    ]
 
     var inProgressTouchPoint: Int?
     
@@ -41,15 +52,19 @@ final class GameModel {
 //        openOverlay(room)
 //    }
     func completeOverlay() {
-        let completedId = inProgressTouchPoint
-        if let id = completedId {
-            mapScene.completeTouchpoint(id)
-        }
-        inProgressTouchPoint = nil
         closeOverlay()
-        mapScene.swapGeneratorOverlay(to: "TP2")
+        guard let id = inProgressTouchPoint else { return }
+        mapScene.completeTouchpoint(id)
+        inProgressTouchPoint = nil
+        guard let completion = touchpointCompletions[id] else { return }
+        if let overlay = completion.nextOverlay {
+            mapScene.swapGeneratorOverlay(to: overlay)
+        }
+        if let background = completion.background {
+            mapScene.swapBackground(to: background)
+        }
         showDialog([
-             DialogLine(speaker: "IRIS", text: "Good job! See the lamp.")
+             DialogLine(speaker: "IRIS", text: completion.text)
         ])
 //        { [weak self] in
 //            self?.mapScene.showGeneratorOverlay()
@@ -58,8 +73,8 @@ final class GameModel {
 
     func showTouchpointPrompt(_ id: Int) {
           activeTouchpoint = id
-          currentScene.inputLocked = true
-          virtualController?.disconnect()
+//          currentScene.inputLocked = true
+//          virtualController?.disconnect()
     }
 
     func confirmTouchpoint() {
@@ -188,6 +203,11 @@ final class GameModel {
     init() {
         mapScene.onTouchpointPrompt = { [weak self] id in
             self?.showTouchpointPrompt(id)
+        }
+
+        mapScene.onHeroMoved = { [weak self] in
+            guard self?.activeTouchpoint != nil else { return }
+            self?.cancelTouchpoint()
         }
 //        mapScene.onCheckpoint = { [weak self] index in
 //            guard let self, let room = Room(rawValue: index) else { return }

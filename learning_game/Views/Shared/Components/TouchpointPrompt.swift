@@ -10,89 +10,67 @@ import SwiftUI
 struct TouchpointPrompt: View {
     let line: DialogLine
     let onConfirm: () -> Void
-    let onCancel: () -> Void
-    
+
     var body: some View {
-        GeometryReader { geo in
-            VStack {
-                Spacer()
-                HStack {
-                    Image(line.image)
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .background(.neutralBlack)
-                        .cornerRadius(8)
-                    VStack(alignment: .leading) {
+        VStack {
+            HStack {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Image(line.image)
+                            .resizable()
+                            .frame(width: 36, height: 36)
+                            .background(.neutralBlack)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                         Text(line.speaker)
-                            .font(.system(.headline, design: .monospaced))
-                            .foregroundStyle(.accent)
-                        Text(line.text)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundStyle(.neutralWhite)
+                            .font(.system(.caption, design: .monospaced).bold())
+                            .foregroundStyle(.neutralBlack)
                     }
-                    Spacer()
-                    VStack(spacing: 12) {
-                          Button(action: onCancel) {
-                              Text("CANCEL")
-                                  .foregroundStyle(.neutralWhite.opacity(0.6))
-                                  .padding(.horizontal, 16)
-                                  .padding(.vertical, 8)
-//                                  .background(.neutralBlack)
-//                                  .overlay(
-//                                      Rectangle()
-//                                          .stroke(.neutralWhite, lineWidth: 2)
-//                                  )
-                          }
-                          .buttonStyle(.plain)
-                                                                                                         
-                          Button(action: onConfirm) {
-                              Text("LET'S GO")
-                                  .foregroundStyle(.neutralBlack)
-                                  .padding(.horizontal, 16)
-                                  .padding(.vertical, 8)
-                                  .background(.accent)
-                                  .overlay(
-                                      Rectangle()
-                                          .stroke(.neutralBlack, lineWidth: 2)
-                                  )
-                          }
-                          .buttonStyle(.plain)
-                      }
+
+                    Text(line.text)
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundStyle(.neutralBlack)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Button(action: onConfirm) {
+                        Text("LET'S GO")
+                            .font(.system(.footnote, design: .monospaced).bold())
+                            .foregroundStyle(.accent)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(.neutralBlack, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .padding()
-                .frame(width: geo.size.width - 24, height: geo.size.height * 0.3)
-                .background(.twilight.opacity(0.90))
-                .clipShape(RoundedRectangle(cornerRadius: 15))
-                .contentShape(Rectangle())
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
+                .padding(12)
+                .frame(maxWidth: 260, alignment: .leading)
+                .background(.accent, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(.neutralBlack, lineWidth: 2)
+                )
+                .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+
+                Spacer()
             }
+            Spacer()
         }
+        .padding(16)
     }
 }
 
 
 #Preview("Interactive") {
-    @Previewable @State var index = 0
-    let lines = [
-        DialogLine(speaker: "IRIS", text:
-"""
-This is Leo's room. Something feels off...
-This is Leo's room. Something feels off...
-"""
-                  ),
-        DialogLine(speaker: "IRIS", text: "Let's look for clues."),
-        DialogLine(speaker: "You", text: "Leo, where did you go?")
-    ]
+    @Previewable @State var isShowing = true
     
     ZStack {
         Color.green.ignoresSafeArea()
-        if index < lines.count {
-            DialogBox(line: lines[index],
-                      isLast: index == lines.count - 1,
-                      onNext: { index += 1 })
+        if isShowing {
+            TouchpointPrompt(
+                line: DialogLine(speaker: "IRIS", text: "Let's check the generator."),
+                onConfirm: { isShowing = false }
+            )
         } else {
-            Button("Restart") { index = 0 }
+            Button("Restart") { isShowing = true }
         }
     }
 }

@@ -24,7 +24,7 @@ struct DialogBox: View {
                     VStack(alignment: .leading) {
                         Text(line.speaker)
                             .font(.system(.headline, design: .monospaced))
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(line.speaker == "IRIS" ? Color.accent : Color.peach)
                         Text(line.text)
                             .font(.system(.body, design: .monospaced))
                             .foregroundStyle(.neutralWhite)
