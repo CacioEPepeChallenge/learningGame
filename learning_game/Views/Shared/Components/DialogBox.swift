@@ -18,13 +18,15 @@ struct DialogBox: View {
                 HStack {
                     Image(line.image)
                         .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()          // keep the portrait's proportions (wide sprites aren't squashed)
                         .frame(width: 80, height: 80)
                         .background(.neutralBlack)
                         .cornerRadius(8)
                     VStack(alignment: .leading) {
                         Text(line.speaker)
                             .font(.system(.headline, design: .monospaced))
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(line.speaker == "IRIS" ? Color.accent : Color.peach)
                         Text(line.text)
                             .font(.system(.body, design: .monospaced))
                             .foregroundStyle(.neutralWhite)
@@ -41,8 +43,8 @@ struct DialogBox: View {
                 }
                 .padding()
                 .frame(width: geo.size.width - 24, height: geo.size.height * 0.3)
-                .background(.twilight.opacity(0.90))
-                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .background(.twilight.opacity(0.96))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
                 .contentShape(Rectangle())
                 .onTapGesture(perform: onNext)
                 .padding(.horizontal, 16)

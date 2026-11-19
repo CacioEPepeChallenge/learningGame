@@ -125,7 +125,7 @@ struct TP1Screen12_TrueOrFalseView: View {
 
 #Preview("Screen 12 · True or False", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()

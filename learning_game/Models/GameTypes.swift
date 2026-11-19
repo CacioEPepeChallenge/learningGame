@@ -22,9 +22,12 @@ enum TileKind {
 struct DialogLine {
     let speaker: String
     let text: String
+    /// Optional portrait override (e.g. "iris" on the touchpoint cards).
+    /// nil = the default portrait for the speaker.
+    var portrait: String? = nil
 
     var image: String {
-        speaker == "IRIS" ? "iris_dialogue" : "mc_head"
+        portrait ?? (speaker == "IRIS" ? "iris_dialogue" : "mc_head")
     }
 }
 

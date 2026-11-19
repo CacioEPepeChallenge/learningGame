@@ -29,7 +29,7 @@ struct TP1Screen08_DeclareVariableView: View {
 
 #Preview("Screen 8 · Declaring Variables", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background")
+        Image("background_dimmed")
             .resizable()
             .interpolation(.none)
             .scaledToFill()
