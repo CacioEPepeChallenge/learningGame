@@ -421,7 +421,12 @@ struct Shake: GeometryEffect {
     }
 }
 
+
 // MARK: - Previews
+
+//#Preview(){
+//    Scene3Panel()
+//}
 
 #Preview("Lamp puzzle") {
     ZStack {

@@ -19,7 +19,7 @@ class GameScene: SKScene {
         let wallRow = (topHalfStart..<rows).flatMap { row in
             (0..<cols).map { col in Tile(col: col, row: row) }
         }
-
+        
         let rect = (0...4).flatMap { col in
             (2...4).map { row in Tile(col: col, row: row) }
         }
@@ -36,13 +36,13 @@ class GameScene: SKScene {
         4: [Tile(col: 9, row: 4), Tile(col: 10, row: 4)],
         5: [Tile(col: 25, row: 4), Tile(col: 26, row: 4)]
     ]
-                                                                                       
+    
     var unlockedTouchpoints: Set<Int> = [1]
-                    
+    
     var touchpointAreas: [Int: [Tile]] {
         allTouchpointAreas.filter { unlockedTouchpoints.contains($0.key) }
     }
-
+    
     var onDialog: (([DialogLine]) -> Void)?
     var inputLocked = false
     private var isBuilt = false
@@ -73,8 +73,11 @@ class GameScene: SKScene {
     var exitTile: Tile? { nil }
     var showDebugOverlay = false
     var onTouchpointPrompt: ((Int) -> Void)?
+    var onHeroMoved: (() -> Void)?
+
     
     private var generatorOverlay: SKSpriteNode?
+    private var backgroundNode: SKSpriteNode?
     func showGeneratorOverlay() {
         guard generatorOverlay == nil else { return }
         let node = SKSpriteNode(imageNamed: "TP1")
@@ -91,9 +94,9 @@ class GameScene: SKScene {
         node.run(.repeatForever(pulse), withKey: "glow")
     }
     
-
-
-
+    
+    
+    
     override init(size: CGSize) {
         super.init(size: size)
         scaleMode = .resizeFill
@@ -104,31 +107,32 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         if showDebugOverlay { buildDebugOverlay() }
-
+        
         
         
         guard !isBuilt else { return }
         isBuilt = true
-
-//        for (index, tile) in checkpoints.enumerated() {
-//            let node = SKSpriteNode(color: .systemBlue, size: CGSize(width: tileSize, height: tileSize))
-//            node.position = center(of: tile)
-//            node.zPosition = 5
-//            
-//            let label = SKLabelNode(text: "\(index + 1)")
-//            label.fontName = "Menlo-Bold"
-//            label.fontSize = 16
-//            label.verticalAlignmentMode = .center
-//            node.addChild(label)
-//            addChild(node)
-//            checkpointNodes.append(node)
-//        }
+        
+        //        for (index, tile) in checkpoints.enumerated() {
+        //            let node = SKSpriteNode(color: .systemBlue, size: CGSize(width: tileSize, height: tileSize))
+        //            node.position = center(of: tile)
+        //            node.zPosition = 5
+        //
+        //            let label = SKLabelNode(text: "\(index + 1)")
+        //            label.fontName = "Menlo-Bold"
+        //            label.fontSize = 16
+        //            label.verticalAlignmentMode = .center
+        //            node.addChild(label)
+        //            addChild(node)
+        //            checkpointNodes.append(node)
+        //        }
         
         let background = SKSpriteNode(imageNamed: "background_dimmed")
         background.position = CGPoint(x: frame.midX, y: frame.midY)
         background.size = frame.size
         background.zPosition = -1
         addChild(background)
+        backgroundNode = background
         
         
         let natural = hero.texture?.size() ?? CGSize(width: 1, height: 1)
@@ -139,23 +143,23 @@ class GameScene: SKScene {
         hero.zPosition = 10
         addChild(hero)
         
-//        let breathe = SKAction.sequence([
-//            .scaleY(to: 0.9, duration: 0.35),
-//            .scaleY(to: 1.0, duration: 0.35)
-//        ])
-//        hero.run(.repeatForever(breathe), withKey: "idle")
+        //        let breathe = SKAction.sequence([
+        //            .scaleY(to: 0.9, duration: 0.35),
+        //            .scaleY(to: 1.0, duration: 0.35)
+        //        ])
+        //        hero.run(.repeatForever(breathe), withKey: "idle")
         
     }
     
     override func update(_ currentTime: TimeInterval) {
         guard let stick = (GCController.current ?? GCController.controllers().first)?
-                .extendedGamepad?.leftThumbstick else { return }
+            .extendedGamepad?.leftThumbstick else { return }
         guard !inputLocked else { return }
         
         let x = stick.xAxis.value
         let y = stick.yAxis.value
         let deadZone: Float = 0.4
-
+        
         // Dominant axis only, so movement stays on the tile grid
         if abs(x) > abs(y), abs(x) > deadZone {
             step(dx: x > 0 ? 1 : -1, dy: 0)
@@ -166,10 +170,10 @@ class GameScene: SKScene {
     }
     
     
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        guard let point = touches.first?.location(in: self) else { return }
-//        walk(to: tile(at: point))
-//    }
+    //    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    //        guard let point = touches.first?.location(in: self) else { return }
+    //        walk(to: tile(at: point))
+    //    }
     
     func center(of tile: Tile) -> CGPoint {
         CGPoint(x: (CGFloat(tile.col) + 0.5) * tileSize,
@@ -186,13 +190,21 @@ class GameScene: SKScene {
              row: Int(point.y / tileSize))
     }
     
-
+    
     
     func walk(to target: Tile) {
         hero.removeAction(forKey: "walk")
         var steps: [SKAction] = []
         var current = heroTile
+<<<<<<< HEAD
 
+=======
+        
+        if target.col != current.col {
+            hero.xScale = target.col > current.col ? 1 : -1
+        }
+        
+>>>>>>> d6fe67ea5a9adea143af1f83044b5897ba33de69
         while current.col != target.col {
             let dx = current.col < target.col ? 1 : -1
             current.col += dx
@@ -251,8 +263,8 @@ class GameScene: SKScene {
             onExit?()
             return
         }
-//        guard let index = checkpoints.firstIndex(of: heroTile) else { return }
-
+        //        guard let index = checkpoints.firstIndex(of: heroTile) else { return }
+        
         if case .touchpoint(let id) = kind(of: heroTile) {
             onTouchpointPrompt?(id)
             print(id)
@@ -266,10 +278,12 @@ class GameScene: SKScene {
         let rows = Int(size.height / tileSize)
         guard (0..<cols).contains(next.col), (0..<rows).contains(next.row) else { return }
         guard case .blocked = kind(of: next) else {
+            onHeroMoved?()      // <- the only added line
             walk(to: next)
             return
         }
     }
+    
     func kind(of tile: Tile) -> TileKind {
         if blockedTiles.contains(tile) { return .blocked }
         if let i = checkpoints.firstIndex(of: tile) { return .interactable(id: i) }
@@ -282,7 +296,7 @@ class GameScene: SKScene {
     func completeTouchpoint(_ id: Int) {
         unlockedTouchpoints.insert(id + 1)
     }
-
+    
     
     func debugColor(for kind: TileKind) -> SKColor {
         switch kind {
@@ -296,16 +310,20 @@ class GameScene: SKScene {
     func swapGeneratorOverlay(to imageName: String) {
         generatorOverlay?.texture = SKTexture(imageNamed: imageName)
     }
+
+    func swapBackground(to imageName: String) {
+        backgroundNode?.texture = SKTexture(imageNamed: imageName)
+    }
     
     func buildDebugOverlay() {
         let cols = Int(size.width / tileSize)
         let rows = Int(size.height / tileSize)
-
+        
         for row in 0..<rows {
             for col in 0..<cols {
                 let tile = Tile(col: col, row: row)
                 let kind = kind(of: tile)
-
+                
                 let square = SKShapeNode(rectOf: CGSize(width: tileSize, height: tileSize))
                 square.fillColor = debugColor(for: kind)
                 square.alpha = 0.35
@@ -314,7 +332,7 @@ class GameScene: SKScene {
                 square.position = center(of: tile)
                 square.zPosition = 1
                 addChild(square)
-
+                
                 let label = SKLabelNode(text: "\(col),\(row)")
                 label.fontName = "Menlo"
                 label.fontSize = 8
@@ -325,8 +343,6 @@ class GameScene: SKScene {
             }
         }
     }
-
-
 }
 
 

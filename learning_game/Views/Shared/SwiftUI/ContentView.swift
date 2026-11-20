@@ -36,6 +36,39 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
             
+            if game.overlayRoom == .scene3 {
+                Scene3Panel(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+            
+            if game.overlayRoom == .scene4 {
+                Scene4Panel(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+            
+            if game.overlayRoom == .scene5 {
+                Scene4Panel(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+            
+            if game.overlayRoom == .scene6 {
+                Scene4Panel(
+                    onClose: game.closeOverlay,
+                    onComplete: game.completeOverlay
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+
+            
             if game.isDialogActive {
                 DialogBox(line: game.dialogLines[game.dialogIndex],
                           isLast: game.dialogIndex == game.dialogLines.count - 1,
@@ -48,8 +81,7 @@ struct ContentView: View {
                let prompt = game.touchpointPrompts[id] {
                 TouchpointPrompt(
                     line: DialogLine(speaker: "IRIS", text: prompt.text),
-                    onConfirm: { game.confirmTouchpoint() },
-                    onCancel: { game.cancelTouchpoint() }
+                    onConfirm: { game.confirmTouchpoint() }
                 )
             }
         }
