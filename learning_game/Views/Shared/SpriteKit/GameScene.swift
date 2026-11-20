@@ -46,7 +46,15 @@ class GameScene: SKScene {
     var onDialog: (([DialogLine]) -> Void)?
     var inputLocked = false
     private var isBuilt = false
-    private let hero = SKSpriteNode(imageNamed: "mc1")
+    private let hero = SKSpriteNode(imageNamed: "mc_front")
+
+    private enum Facing { case front, back, left, right }
+    private var facing: Facing = .front
+    private let tFront = SKTexture(imageNamed: "mc_front")
+    private let tFrontWalk = SKTexture(imageNamed: "mc_front_walk")
+    private let tBack = SKTexture(imageNamed: "mc_back")
+    private let tSideLeft = SKTexture(imageNamed: "mc_side_left")
+    private let tSideWalkLeft = SKTexture(imageNamed: "mc_side_walk_left")
     private let touchpoint1 = SKSpriteNode(color: .systemBlue, size: CGSize(width: 32, height: 32))
     var checkpoints: [Tile] { [
         Tile(col: 2, row: 6),
@@ -123,7 +131,9 @@ class GameScene: SKScene {
         addChild(background)
         
         
-        hero.size = CGSize(width: hero.size.width*1.5, height: hero.size.height*1.5)
+        let natural = hero.texture?.size() ?? CGSize(width: 1, height: 1)
+        let fit = min(tileSize * 2.5 / natural.width, tileSize * 4.5 / natural.height)
+        hero.size = CGSize(width: natural.width * fit, height: natural.height * fit)
         hero.anchorPoint = CGPoint(x: 0.5, y: 0)
         hero.position = center(of: heroTile)
         hero.zPosition = 10
@@ -183,31 +193,57 @@ class GameScene: SKScene {
         var steps: [SKAction] = []
         var current = heroTile
 
-        
-        if target.col != current.col {
-            hero.xScale = target.col > current.col ? 1 : -1
-        }
-        
         while current.col != target.col {
-            current.col += current.col < target.col ? 1 : -1
+            let dx = current.col < target.col ? 1 : -1
+            current.col += dx
             let next = current
+            let direction: Facing = dx > 0 ? .right : .left
+            steps.append(.run { [weak self] in self?.setFacing(direction, walking: true) })
             steps.append(.move(to: center(of: next), duration: 0.12))
-            steps.append(.run {
-                [weak self] in self?.heroTile = next
-            })
+            steps.append(.run { [weak self] in self?.heroTile = next })
         }
         while current.row != target.row {
-            current.row += current.row < target.row ? 1 : -1
+            let dy = current.row < target.row ? 1 : -1
+            current.row += dy
             let next = current
+            let direction: Facing = dy > 0 ? .back : .front
+            steps.append(.run { [weak self] in self?.setFacing(direction, walking: true) })
             steps.append(.move(to: center(of: next), duration: 0.12))
-            steps.append(.run {
-                [weak self] in self?.heroTile = next
-            })
+            steps.append(.run { [weak self] in self?.heroTile = next })
         }
-        steps.append(.run {
-            [weak self] in self?.checkReached()
+        steps.append(.run { [weak self] in
+            guard let self else { return }
+            self.setFacing(self.facing, walking: false)
+            self.checkReached()
         })
         hero.run(.sequence(steps), withKey: "walk")
+    }
+
+    private func setFacing(_ newFacing: Facing, walking: Bool) {
+        let directionChanged = facing != newFacing
+        facing = newFacing
+
+        let idle: SKTexture
+        let walkTexture: SKTexture?
+        let scale: CGFloat
+        switch newFacing {
+        case .front: idle = tFront; walkTexture = tFrontWalk; scale = 1
+        case .back:  idle = tBack;  walkTexture = nil;        scale = 1
+        case .left:  idle = tSideLeft; walkTexture = tSideWalkLeft; scale = -1
+        case .right: idle = tSideLeft; walkTexture = tSideWalkLeft; scale = 1
+        }
+        hero.xScale = scale
+
+        if walking, let walkTexture {
+            if directionChanged || hero.action(forKey: "step") == nil {
+                hero.removeAction(forKey: "step")
+                let anim = SKAction.repeatForever(.animate(with: [walkTexture, idle], timePerFrame: 0.12))
+                hero.run(anim, withKey: "step")
+            }
+        } else {
+            hero.removeAction(forKey: "step")
+            hero.texture = idle
+        }
     }
     
     func checkReached() {
@@ -237,7 +273,7 @@ class GameScene: SKScene {
     func kind(of tile: Tile) -> TileKind {
         if blockedTiles.contains(tile) { return .blocked }
         if let i = checkpoints.firstIndex(of: tile) { return .interactable(id: i) }
-        for (id, tiles) in allTouchpointAreas where tiles.contains(tile) {
+        for (id, tiles) in touchpointAreas where tiles.contains(tile) {
             return .touchpoint(id: id)
         }
         return .walkable
