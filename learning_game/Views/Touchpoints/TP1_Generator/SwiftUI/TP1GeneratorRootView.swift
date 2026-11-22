@@ -63,6 +63,9 @@ struct TP1GeneratorRootView: View {
             .environment(\.gameBackAction, viewModel.canGoBack ? { viewModel.goBack() } : nil)
             .id(screen)
             .transition(.opacity)
+            .overlay(alignment: .topTrailing) {
+                DebugAutocompleteButton(action: { viewModel.onComplete?() })
+            }
         }
     }
 }

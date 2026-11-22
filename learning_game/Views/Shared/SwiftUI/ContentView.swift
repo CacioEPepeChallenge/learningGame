@@ -20,7 +20,6 @@ struct ContentView: View {
                        transition: .fade(withDuration: 0.5),
                        debugOptions: [.showsFPS, .showsNodeCount])
             .ignoresSafeArea()
-            .onAppear{ game.playIntro() }
 
             if game.currentRoom != nil {
                 Button("Back") { game.currentRoom = nil }
@@ -69,6 +68,60 @@ struct ContentView: View {
             }
 
             
+            if game.showPaintingReveal {
+                PaintingRevealView(onComplete: { game.finishPaintingReveal() })
+                    .transition(.opacity)
+            }
+
+            if game.showSafeReveal {
+                SafeRevealView(onComplete: { game.finishSafeReveal() },
+                               playerName: game.playerName)
+                    .transition(.opacity)
+            }
+
+            if game.showEndingScene {
+                endingSceneView(onComplete: { game.finishEndingScene() })
+                    .transition(.opacity)
+            }
+
+            if game.showBlackScreen {
+                ZStack(alignment: .bottomTrailing) {
+                    Color.black
+                        .ignoresSafeArea()
+                    VStack(alignment: .trailing, spacing: 12) {
+                        Text("To be continued →")
+                            .font(.system(.title3, design: .monospaced).bold())
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Color.white.opacity(0.12))
+                            .clipShape(Capsule())
+                        Button(action: { game = GameModel() }) {
+                            Text("Start Again")
+                                .font(.system(.title3, design: .monospaced).bold())
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(Color.white)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(24)
+                }
+                .transition(.opacity)
+            }
+
+            if game.showStartScene && !game.showNameEntry {
+                startSceneView(onComplete: { game.finishStartScene() },
+                               playerName: game.playerName)
+                    .transition(.opacity)
+            }
+
+            if game.showNameEntry {
+                NameEntryView(onSubmit: { game.finishNameEntry($0) })
+                    .transition(.opacity)
+            }
+
             if game.isDialogActive {
                 DialogBox(line: game.dialogLines[game.dialogIndex],
                           isLast: game.dialogIndex == game.dialogLines.count - 1,

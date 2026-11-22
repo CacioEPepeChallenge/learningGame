@@ -196,15 +196,7 @@ class GameScene: SKScene {
         hero.removeAction(forKey: "walk")
         var steps: [SKAction] = []
         var current = heroTile
-<<<<<<< HEAD
 
-=======
-        
-        if target.col != current.col {
-            hero.xScale = target.col > current.col ? 1 : -1
-        }
-        
->>>>>>> d6fe67ea5a9adea143af1f83044b5897ba33de69
         while current.col != target.col {
             let dx = current.col < target.col ? 1 : -1
             current.col += dx
