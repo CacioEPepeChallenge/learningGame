@@ -63,9 +63,16 @@ final class GameModel {
         closeOverlay()
         guard let id = inProgressTouchPoint else { return }
         mapScene.completeTouchpoint(id)
+        let isReplay = completedTouchpoints.contains(id)
         completedTouchpoints.insert(id)
         inProgressTouchPoint = nil
         guard let completion = touchpointCompletions[id] else { return }
+
+        // Replaying an old touchpoint must not roll the map back to an earlier overlay/background
+        if isReplay {
+            showDialog([DialogLine(speaker: "IRIS", text: completion.text)])
+            return
+        }
 
         if id == 4 {
             pendingCompletion = completion
@@ -212,6 +219,13 @@ final class GameModel {
     
     var virtualController: GCVirtualController?
     var onInteract: (() -> Void)?
+    @ObservationIgnored private var controllerObserver: NSObjectProtocol?
+
+    // A button presses the touchpoint prompt's button ("LET'S GO" / "LET'S TRY AGAIN")
+    private func handleButtonA() {
+        guard activeTouchpoint != nil else { return }
+        confirmTouchpoint()
+    }
     
     static let sceneSize = CGSize(width: 390, height: 844)
 
@@ -311,6 +325,17 @@ final class GameModel {
         let cfg = GCVirtualController.Configuration()
         cfg.elements = [GCInputLeftThumbstick, GCInputButtonA]
         virtualController = GCVirtualController(configuration: cfg)
+
+        // The virtual controller is recreated on every connect(), so rebind A each time.
+        controllerObserver = NotificationCenter.default.addObserver(
+            forName: .GCControllerDidConnect, object: nil, queue: .main
+        ) { [weak self] note in
+            guard let controller = note.object as? GCController else { return }
+            controller.extendedGamepad?.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+                guard pressed else { return }
+                self?.handleButtonA()
+            }
+        }
         // Joystick stays disconnected until startSceneView finishes.
         // finishStartScene() → playIntro() → showDialog → nextLine calls connect().
     }
