@@ -30,8 +30,8 @@ class GameScene: SKScene {
         return wallRow + rect + rect2
     }
     private let allTouchpointAreas: [Int: [Tile]] = [
-        1: [Tile(col: 24, row: 0), Tile(col: 24, row: 1)],
-        2: [Tile(col: 13, row: 4), Tile(col: 13, row: 3)],
+        1: [Tile(col: 24, row: 0), Tile(col: 24, row: 1), Tile(col: 24, row: 2)],
+        2: [Tile(col: 13, row: 4), Tile(col: 13, row: 3), Tile(col: 12, row: 4)],
         3: [Tile(col: 15, row: 4), Tile(col: 16, row: 4)],
         4: [Tile(col: 7, row: 4), Tile(col: 8, row: 4)],   // beside the desk, so the MC doesn't hide the PC screen
         5: [Tile(col: 25, row: 4), Tile(col: 26, row: 4)]

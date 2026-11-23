@@ -20,6 +20,8 @@ struct ContentView: View {
                        transition: .fade(withDuration: 0.5),
                        debugOptions: [.showsFPS, .showsNodeCount])
             .ignoresSafeArea()
+            // New GameModel ("Start Again") → brand-new SKView, nothing carried over
+            .id(ObjectIdentifier(game))
 
             if game.currentRoom != nil {
                 Button("Back") { game.currentRoom = nil }
@@ -101,7 +103,10 @@ struct ContentView: View {
                             .padding(.vertical, 10)
                             .background(Color.white.opacity(0.12))
                             .clipShape(Capsule())
-                        Button(action: { game = GameModel() }) {
+                        Button(action: {
+                            game.tearDown()
+                            game = GameModel()
+                        }) {
                             Text("Start Again")
                                 .font(.system(.title3, design: .monospaced).bold())
                                 .foregroundStyle(.black)

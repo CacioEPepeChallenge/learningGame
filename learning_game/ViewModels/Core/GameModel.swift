@@ -146,7 +146,7 @@ final class GameModel {
     func finishTranscript() {
         showTranscript = false
         mapScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
         mapScene.swapGeneratorOverlay(to: "TP6")      // no overlay glow
         mapScene.showPaintingGlow()
         showDialog(laptopToPainting)
@@ -266,7 +266,7 @@ final class GameModel {
     func cancelTouchpoint() {
         activeTouchpoint = nil
         currentScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
     }
     
     func openOverlay(_ room: Room) {
@@ -278,7 +278,7 @@ final class GameModel {
     func closeOverlay() {
         overlayRoom = nil
         mapScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
     }
     
     
@@ -297,7 +297,7 @@ final class GameModel {
         } else {
             dialogLines = []
             ([mapScene] + Array(rooms.values)).forEach { $0.inputLocked = false }
-            virtualController?.connect()
+            connectController()
             let completion = dialogCompletion
             dialogCompletion = nil
             completion?()
@@ -306,6 +306,33 @@ final class GameModel {
     
     var virtualController: GCVirtualController?
     var onInteract: (() -> Void)?
+
+    /// Connects this model's own joystick and binds A on that controller only.
+    /// (A global GCControllerDidConnect observer let an old GameModel grab
+    /// the A button after "Start Again".)
+    func connectController() {
+        virtualController?.connect { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.virtualController?.controller?.extendedGamepad?.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+                    guard pressed else { return }
+                    self?.handleButtonA()
+                }
+            }
+        }
+    }
+
+    /// Call before replacing this model so its joystick doesn't linger on screen
+    /// or stay as GCController.current, which GameScene reads for movement.
+    func tearDown() {
+        virtualController?.disconnect()
+        virtualController = nil
+    }
+
+    // A button presses the touchpoint prompt's button ("LET'S GO" / "LET'S TRY AGAIN")
+    private func handleButtonA() {
+        guard activeTouchpoint != nil else { return }
+        confirmTouchpoint()
+    }
     
     static let sceneSize = CGSize(width: 390, height: 844)
 
@@ -434,6 +461,6 @@ final class GameModel {
         cfg.elements = [GCInputLeftThumbstick, GCInputButtonA]
         virtualController = GCVirtualController(configuration: cfg)
         // Joystick stays disconnected until startSceneView finishes.
-        // finishStartScene() → playIntro() → showDialog → nextLine calls connect().
+        // finishStartScene() → playIntro() → showDialog → nextLine calls connectController().
     }
 }
