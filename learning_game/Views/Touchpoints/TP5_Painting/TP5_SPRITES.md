@@ -1,71 +1,30 @@
-# Touchpoint 5 · Functions — sprite list
+# Touchpoint 5 · Functions — where the art comes from
 
-Drop each PNG into `Resources/Assets/Sprites.xcassets` with **exactly this name**.
-Until it exists, the game draws a vector stand-in inside a dashed outline with the
-name printed on it (debug builds only), so you can see where each sprite goes.
+Every TP5 visual is built from art that is **already in the game**, so the
+puzzle cards show the same objects the player sees in the room:
 
-Pixel art is scaled with nearest-neighbour, so draw at a small size (e.g. 1× = the
-point size below ÷ 2) and keep the aspect ratio. Transparent background.
-
-**Animated sprites:** add frames `name_1`, `name_2`, … instead of `name`.
-(The code currently animates by rotating/sliding the single sprite; frames are
-optional extras.)
-
-## Intro card — the painting
-
-| Asset | Size (pt) | What to draw |
+| What | Source | Code |
 |---|---|---|
-| `painting` | 128 × 192 | ✅ already exists |
-| `tp5_safe_closed` | 132 × 160 | Wall safe front, closed, with **5 small red bolt lights** along the bottom. Revealed when the player slides the painting. |
+| Leo's wall safe (body, dial, T-handle, latch nubs) | `Resources/Animation/safe_open_slow.gif`, frame 0 — the 32 × 48 sprite drawn at 6× | `GameArt.safe…`, `SafeArtView` |
+| The painting | `painting` (Sprites.xcassets, 32 × 48 at 10×) | `TP5PaintingReveal` |
+| Jam spark | `spark` | `TP5SafeDoorStage` |
 
-## Lock 1 · Define, then call
+`SafeArtView` (Views/Shared/Components/GameArt.swift) animates the real parts:
 
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `tp5_safe_door` | 104 × 116 | Close-up of the safe door (background plate, no dial/lever). |
-| `tp5_safe_dial` | 48 × 48 | Round combination dial, top-down. **Rotates in code**, so draw it centered and symmetric. |
-| `tp5_safe_lever` | 14 × 52 | Vertical lever / handle. **Rotates around its top end** (pivot at the top). |
-| `tp5_safe_bolt` | 40 × 10 | Horizontal steel deadbolt bar. Slides right when the lock opens. |
-| `spark` | 30 × 30 | ✅ already exists (shown when the lever jams) |
+- **Lock 1** — the dial spins, the T-handle pulls down.
+- **Lock 2** — `flash()` lights the safe's red LED; `beep()` chirps (RetroSFX).
+- **Lock 3** — the safe's own dial, close up, turning under an index mark.
+- **Lock 4** — return values travel into the safe's keypad display.
+- **Lock 5** — three latches on the door edge go bolted → lifted → retracted.
+- **All cards** — the 5 lights on the bottom bezel are the deadbolts; they turn
+  green as locks open.
 
-## Lock 2 · Trace the calls
+After TP5 the game's `SafeRevealView` plays `safe_open_slow.gif`, so the safe
+the player has been working on is the one that opens.
 
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `lamp_on` / `lamp_off` | 52 × 52 | ✅ already exist (the `flash()` signal) |
-| `tp5_speaker` | 34 × 34 | Small retro speaker / buzzer (the `beep()` signal). Pulses + ring wave in code. Optional frames `tp5_speaker_1…n` for a vibrating cone. |
+## Changing the art
 
-## Lock 3 · Pass the arguments
-
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `tp5_clue_note` | 112 × 28 | Torn sticky note / paper strip (Leo's handwriting). **Leave it blank**: the digits `7 · 3 · 8` are drawn on top in code so they can turn green/red. |
-| `tp5_dial_face` | 100 × 100 | Big dial face with numbers **0–9 clockwise, 0 at the top**, 36° apart (the needle math depends on that layout). |
-| `tp5_dial_needle` | 4 × 36 | Thin needle pointing **up**, pivot at its bottom end. Rotates in code. |
-
-## Lock 4 · Return the key
-
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `tp5_machine_double` | 88 × 28 | Little machine / pipe module for `double`. The function name is drawn on top in code, so leave space in the middle. |
-| `tp5_machine_addThree` | 88 × 28 | Same family, different colour/icon, for `addThree`. |
-| `tp5_machine_square` | 88 × 28 | Same family, for `square`. |
-| `tp5_keypad` | 88 × 18 | Small LCD keypad display strip (the result `22 / 22` is drawn on top). |
-
-## Lock 5 · Write it once
-
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `tp5_latch_frame` | 96 × 24 | Horizontal latch housing / rail (the bar slides inside it). |
-| `tp5_latch_bar` | 44 × 10 | The latch bar itself. Tinted by state in the fallback (burgundy locked → amber unlatched → green open); with a sprite, consider a neutral metal bar. |
-
-## Finale
-
-| Asset | Size (pt) | What to draw |
-|---|---|---|
-| `painting_safe.gif` | 128 × 192 | ✅ already exists (painting slides away, safe opens) |
-
-## Nice-to-have (not wired yet)
-
-- `iris_happy`, `iris_alert`: I.R.I.S. reaction faces, to swap with `iris` on the lesson/feedback lines.
-- `tp5_lock_closed` / `tp5_lock_open` (20 × 20): could replace the numbered lock dots.
+Replace `safe_open_slow.gif` (keep the 32 × 48 grid at 6×) and every TP5 card
+updates. If the layout of the safe changes, update the art-pixel rectangles at
+the top of `GameArt` (dial, handle, door patch, edge row) and the offsets in
+`SafeArtView`.

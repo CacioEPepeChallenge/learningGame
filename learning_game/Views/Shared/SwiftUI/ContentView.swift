@@ -44,30 +44,35 @@ struct ContentView: View {
             }
 
             if game.overlayRoom == .scene4 {
-                Scene4Panel(
+                TP3BookshelfView(
                     onClose: game.closeOverlay,
                     onComplete: game.completeOverlay
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .transition(.opacity)
             }
 
             if game.overlayRoom == .scene5 {
-                Scene4Panel(
+                TP4LaptopView(
                     onClose: game.closeOverlay,
                     onComplete: game.completeOverlay
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .transition(.opacity)
             }
 
             if game.overlayRoom == .scene6 {
-                Scene4Panel(
+                TP5PaintingRootView(
+                    paintingRevealed: true,
                     onClose: game.closeOverlay,
                     onComplete: game.completeOverlay
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .transition(.opacity)
             }
 
-            
+            if game.showTranscript {
+                TP4TranscriptView(onFinish: { game.finishTranscript() })
+                    .transition(.opacity)
+            }
+
             if game.showPaintingReveal {
                 PaintingRevealView(onComplete: { game.finishPaintingReveal() })
                     .transition(.opacity)

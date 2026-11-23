@@ -34,7 +34,7 @@ struct TP5Lock1DefineCallView: View {
             onNext: viewModel.goToNext, onClose: viewModel.close
         ) {
             TP5SafeDoorStage(dialTurns: p.dialTurns, leverPulled: p.leverPulled,
-                             boltOpen: p.boltOpen, jammed: p.jammed)
+                             boltOpen: p.boltOpen, jammed: p.jammed, opened: viewModel.openedLocks)
         } code: {
             TP5CodeBox(phase: p.phase) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -102,7 +102,8 @@ struct TP5Lock2TraceCallsView: View {
             onRun: { Task { await p.run() } }, onRetry: p.retry, onHint: p.showHint,
             onNext: viewModel.goToNext, onClose: viewModel.close
         ) {
-            TP5SignalStage(lampOn: p.lampOn, beepCount: p.beepCount, emitted: p.emitted)
+            TP5SignalStage(lampOn: p.lampOn, beepCount: p.beepCount, emitted: p.emitted,
+                           opened: viewModel.openedLocks)
         } code: {
             TP5CodeBox(phase: p.phase) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -383,7 +384,7 @@ struct TP5Lock5ReuseView: View {
             onNext: viewModel.goToNext, onClose: viewModel.close
         ) {
             TP5LatchStage(latches: p.latches, activeLatch: p.activeLatch,
-                          jammedLatch: p.jammedLatch, binding: p.binding)
+                          jammedLatch: p.jammedLatch, binding: p.binding, opened: viewModel.openedLocks)
         } code: {
             TP5CodeBox(phase: p.phase) {
                 VStack(alignment: .leading, spacing: 0) {
