@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TouchpointPrompt: View {
+struct TouchpointPromptDone: View {
     let line: DialogLine
     let onConfirm: () -> Void
 
@@ -19,31 +19,31 @@ struct TouchpointPrompt: View {
                         Image(line.image)
                             .resizable()
                             .frame(width: 36, height: 36)
-                            .background(.neutralBlack)
+                            .background(.peach)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         Text(line.speaker)
                             .font(.system(.caption, design: .monospaced).bold())
                             .foregroundStyle(.accent)
                     }
 
-                    Text(line.text)
+                    Text("You have fixed this before, but sure you can try it again.")
                         .font(.system(.footnote, design: .monospaced))
-                        .foregroundStyle(.neutralWhite)
+                        .foregroundStyle(.neutralBlack)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Button(action: onConfirm) {
-                        Text("LET'S GO")
+                        Text("LET'S TRY AGAIN")
                             .font(.system(.footnote, design: .monospaced).bold())
-                            .foregroundStyle(.neutralWhite)
+                            .foregroundStyle(.neutralBlack)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
-                            .background(.burgundy, in: Capsule())
+                            .background(.lightGrey, in: Capsule())
                     }
                     .buttonStyle(.plain)
                 }
                 .padding(12)
                 .frame(maxWidth: 280, alignment: .leading)
-                .background(.twilight, in: RoundedRectangle(cornerRadius: 10))
+                .background(.peach, in: RoundedRectangle(cornerRadius: 10))
                 /*.overlay(
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(.neutralBlack, lineWidth: 2)
@@ -65,7 +65,7 @@ struct TouchpointPrompt: View {
     ZStack {
         Color.green.ignoresSafeArea()
         if isShowing {
-            TouchpointPrompt(
+            TouchpointPromptDone(
                 line: DialogLine(speaker: "IRIS", text: "Let's check the generator."),
                 onConfirm: { isShowing = false }
             )

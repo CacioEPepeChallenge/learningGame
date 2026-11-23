@@ -27,7 +27,7 @@ struct NameEntryView: View {
                     .font(.system(.headline, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.75))
 
-                TextField("", text: $name)
+                TextField("Anonymous", text: $name)
                     .font(.system(.title2, design: .monospaced))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)

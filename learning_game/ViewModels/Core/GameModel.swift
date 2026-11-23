@@ -20,7 +20,7 @@ final class GameModel {
     var dialogIndex = 0
     var isDialogActive: Bool { !dialogLines.isEmpty }
     var overlayRoom: Room? = nil
-    var playerName: String = "Rudi"
+    var playerName: String = "Anonymous"
     var showNameEntry: Bool = true
     var showStartScene: Bool = true
     var showPaintingReveal: Bool = false
@@ -47,7 +47,8 @@ final class GameModel {
     ]
 
     var inProgressTouchPoint: Int?
-    
+    var completedTouchpoints: Set<Int> = []
+
     private var dialogCompletion: (() -> Void)?
 
     
@@ -62,6 +63,7 @@ final class GameModel {
         closeOverlay()
         guard let id = inProgressTouchPoint else { return }
         mapScene.completeTouchpoint(id)
+        completedTouchpoints.insert(id)
         inProgressTouchPoint = nil
         guard let completion = touchpointCompletions[id] else { return }
 
@@ -137,7 +139,7 @@ final class GameModel {
 
     func finishNameEntry(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        playerName = trimmed.isEmpty ? "Rudi" : trimmed
+        playerName = trimmed.isEmpty ? "Anonymous" : trimmed
         showNameEntry = false
     }
 
