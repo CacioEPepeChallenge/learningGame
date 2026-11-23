@@ -10,11 +10,14 @@ import WebKit
 
 struct startSceneView: View {
     let onComplete: () -> Void
-    var playerName: String = "Rudi"
+    var playerName: String = "Anonymous"
 
     private let duration: TimeInterval = 3.0
     private var lines: [DialogLine] {
-        [DialogLine(speaker: playerName, text: "Leo..... Are you in there?")]
+        [
+            DialogLine(speaker: playerName, text: "Leo, are you in there? I haven't seen you in weeks."),
+            DialogLine(speaker: playerName, text: "If you don't answer, I'm coming in.")
+        ]
     }
     @State private var showDialog = false
     @State private var dialogIndex = 0

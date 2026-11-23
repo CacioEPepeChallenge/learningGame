@@ -135,8 +135,8 @@ class GameScene: SKScene {
         generatorOverlay = node
         
         let pulse = SKAction.sequence([
-            .fadeAlpha(to: 0.6, duration: 0.8),
-            .fadeAlpha(to: 1.0, duration: 0.8)
+            .fadeAlpha(to: 0.6, duration: 1.5),
+            .fadeAlpha(to: 1.5, duration: 0.8)
         ])
         node.run(.repeatForever(pulse), withKey: "glow")
     }

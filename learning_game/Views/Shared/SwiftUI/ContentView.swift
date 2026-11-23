@@ -96,12 +96,12 @@ struct ContentView: View {
                     Color.black
                         .ignoresSafeArea()
                     VStack(alignment: .trailing, spacing: 12) {
-                        Text("To be continued →")
+                        Text("To be continued...")
                             .font(.system(.title3, design: .monospaced).bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color.white.opacity(0.12))
+//                            .background(Color.white.opacity(0.12))
                             .clipShape(Capsule())
                         Button(action: {
                             game.tearDown()
@@ -142,10 +142,17 @@ struct ContentView: View {
             
             if let id = game.activeTouchpoint,
                let prompt = game.touchpointPrompts[id] {
-                TouchpointPrompt(
-                    line: DialogLine(speaker: "IRIS", text: prompt.text),
-                    onConfirm: { game.confirmTouchpoint() }
-                )
+                if game.completedTouchpoints.contains(id) {
+                    TouchpointPromptDone(
+                        line: DialogLine(speaker: "IRIS", text: prompt.text),
+                        onConfirm: { game.confirmTouchpoint() }
+                    )
+                } else {
+                    TouchpointPrompt(
+                        line: DialogLine(speaker: "IRIS", text: prompt.text),
+                        onConfirm: { game.confirmTouchpoint() }
+                    )
+                }
             }
         }
     }

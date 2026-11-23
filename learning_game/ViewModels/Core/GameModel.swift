@@ -20,7 +20,7 @@ final class GameModel {
     var dialogIndex = 0
     var isDialogActive: Bool { !dialogLines.isEmpty }
     var overlayRoom: Room? = nil
-    var playerName: String = "Rudi"
+    var playerName: String = "Anonymous"
     var showNameEntry: Bool = true
     var showStartScene: Bool = true
     var showPaintingReveal: Bool = false
@@ -84,6 +84,8 @@ final class GameModel {
     /// The painting-reveal animation has played (so re-entering TP5 skips it).
     private var paintingRevealed = false
     
+    var completedTouchpoints: Set<Int> = []
+
     private var dialogCompletion: (() -> Void)?
 
     
@@ -98,8 +100,16 @@ final class GameModel {
         closeOverlay()
         guard let id = inProgressTouchPoint else { return }
         mapScene.completeTouchpoint(id)
+        let isReplay = completedTouchpoints.contains(id)
+        completedTouchpoints.insert(id)
         inProgressTouchPoint = nil
         guard let completion = touchpointCompletions[id] else { return }
+
+        // Replaying an old touchpoint must not roll the map back to an earlier overlay/background
+        if isReplay {
+            showDialog([DialogLine(speaker: "IRIS", text: completion.text)])
+            return
+        }
 
         if id == 4 {
             // Laptop decrypted: screen flips, decrypt chirp, then the readout.
@@ -178,7 +188,7 @@ final class GameModel {
 
     func finishNameEntry(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        playerName = trimmed.isEmpty ? "Rudi" : trimmed
+        playerName = trimmed.isEmpty ? "Anonymous" : trimmed
         showNameEntry = false
     }
 
