@@ -43,8 +43,8 @@ struct DialogBox: View {
                 }
                 .padding()
                 .frame(width: geo.size.width - 24, height: geo.size.height * 0.3)
-                .background(.twilight.opacity(0.90))
-                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .background(.twilight.opacity(0.96))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
                 .contentShape(Rectangle())
                 .onTapGesture(perform: onNext)
                 .padding(.horizontal, 16)

@@ -100,6 +100,9 @@ struct Scene2Panel: View {
         }
         .sensoryFeedback(.success, trigger: rightTrigger)
         .sensoryFeedback(.error, trigger: wrongTrigger)
+        .overlay(alignment: .topTrailing) {
+            DebugAutocompleteButton(action: onComplete)
+        }
     }
 
     @ViewBuilder

@@ -23,32 +23,32 @@ struct TouchpointPrompt: View {
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         Text(line.speaker)
                             .font(.system(.caption, design: .monospaced).bold())
-                            .foregroundStyle(.neutralBlack)
+                            .foregroundStyle(.accent)
                     }
 
                     Text(line.text)
                         .font(.system(.footnote, design: .monospaced))
-                        .foregroundStyle(.neutralBlack)
+                        .foregroundStyle(.neutralWhite)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Button(action: onConfirm) {
                         Text("LET'S GO")
                             .font(.system(.footnote, design: .monospaced).bold())
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(.neutralWhite)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
-                            .background(.neutralBlack, in: Capsule())
+                            .background(.burgundy, in: Capsule())
                     }
                     .buttonStyle(.plain)
                 }
                 .padding(12)
-                .frame(maxWidth: 260, alignment: .leading)
-                .background(.accent, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(
+                .frame(maxWidth: 280, alignment: .leading)
+                .background(.twilight, in: RoundedRectangle(cornerRadius: 10))
+                /*.overlay(
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(.neutralBlack, lineWidth: 2)
                 )
-                .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+                .shadow(color: .black.opacity(0.25), radius: 6, y: 3)*/
 
                 Spacer()
             }

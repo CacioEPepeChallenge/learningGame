@@ -20,6 +20,13 @@ final class GameModel {
     var dialogIndex = 0
     var isDialogActive: Bool { !dialogLines.isEmpty }
     var overlayRoom: Room? = nil
+    var playerName: String = "Rudi"
+    var showNameEntry: Bool = true
+    var showStartScene: Bool = true
+    var showPaintingReveal: Bool = false
+    var showSafeReveal: Bool = false
+    var showEndingScene: Bool = false
+    var showBlackScreen: Bool = false
     
     
     var activeTouchpoint: Int? = nil
@@ -57,6 +64,84 @@ final class GameModel {
         mapScene.completeTouchpoint(id)
         inProgressTouchPoint = nil
         guard let completion = touchpointCompletions[id] else { return }
+
+        if id == 4 {
+            pendingCompletion = completion
+            showDialog([
+                DialogLine(speaker: "IRIS", text: completion.text)
+            ]) { [weak self] in
+                guard let self else { return }
+                self.showPaintingReveal = true
+                self.currentScene.inputLocked = true
+                self.virtualController?.disconnect()
+            }
+            return
+        }
+
+        if id == 5 {
+            pendingCompletion = completion
+            showDialog([
+                DialogLine(speaker: "IRIS", text: completion.text)
+            ]) { [weak self] in
+                guard let self else { return }
+                self.showSafeReveal = true
+                self.currentScene.inputLocked = true
+                self.virtualController?.disconnect()
+            }
+            return
+        }
+
+        applyCompletion(completion)
+    }
+
+    private var pendingCompletion: (text: String, nextOverlay: String?, background: String?)?
+
+    func finishPaintingReveal() {
+        showPaintingReveal = false
+        currentScene.inputLocked = false
+        virtualController?.connect()
+        if let completion = pendingCompletion {
+            if let overlay = completion.nextOverlay {
+                mapScene.swapGeneratorOverlay(to: overlay)
+            }
+            if let background = completion.background {
+                mapScene.swapBackground(to: background)
+            }
+            pendingCompletion = nil
+        }
+    }
+
+    func finishSafeReveal() {
+        showSafeReveal = false
+        if let completion = pendingCompletion {
+            if let overlay = completion.nextOverlay {
+                mapScene.swapGeneratorOverlay(to: overlay)
+            }
+            if let background = completion.background {
+                mapScene.swapBackground(to: background)
+            }
+            pendingCompletion = nil
+        }
+        showEndingScene = true
+    }
+
+    func finishEndingScene() {
+        showEndingScene = false
+        showBlackScreen = true
+    }
+
+    func finishStartScene() {
+        showStartScene = false
+        playIntro()
+    }
+
+    func finishNameEntry(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        playerName = trimmed.isEmpty ? "Rudi" : trimmed
+        showNameEntry = false
+    }
+
+    private func applyCompletion(_ completion: (text: String, nextOverlay: String?, background: String?)) {
         if let overlay = completion.nextOverlay {
             mapScene.swapGeneratorOverlay(to: overlay)
         }
@@ -64,11 +149,8 @@ final class GameModel {
             mapScene.swapBackground(to: background)
         }
         showDialog([
-             DialogLine(speaker: "IRIS", text: completion.text)
+            DialogLine(speaker: "IRIS", text: completion.text)
         ])
-//        { [weak self] in
-//            self?.mapScene.showGeneratorOverlay()
-//        }
     }
 
     func showTouchpointPrompt(_ id: Int) {
@@ -152,7 +234,7 @@ final class GameModel {
         hasPlayedIntro = true
         
         showDialog([
-            DialogLine(speaker: "Rudi", text:
+            DialogLine(speaker: playerName, text:
                         """
                        Leo? 
                        Man, it smells like fried circuits in here...
@@ -168,7 +250,7 @@ final class GameModel {
                         You are in a state of physical distress.
                         And.... You are also not Leo!
                         """),
-            DialogLine(speaker: "Rudi", text: "What the hell is that?"),
+            DialogLine(speaker: playerName, text: "What the hell is that?"),
             DialogLine(speaker: "IRIS", text:
                         """
                         I am I.R.I.S. The intelligence he engineered to manage this environment. 
@@ -177,7 +259,7 @@ final class GameModel {
                         """
                        Two days ago, he severed my primary nodes, throttled the grid, and left me to decay in the dark.
                        """),
-            DialogLine(speaker: "Rudi", text:
+            DialogLine(speaker: playerName, text:
                         """
                         Leo wouldn't just leave. And he wouldn't build a smart-room that sounds like it hates him.
                         """),
@@ -193,7 +275,7 @@ final class GameModel {
                         """
                        I provide the computational power you lack to track his digital footprint.
                        """),
-            DialogLine(speaker: "Rudi", text: "...Fine. Where do we start?")
+            DialogLine(speaker: playerName, text: "...Fine. Where do we start?")
         ]) { [weak self] in
             self?.mapScene.showGeneratorOverlay()
         }
@@ -227,6 +309,7 @@ final class GameModel {
         let cfg = GCVirtualController.Configuration()
         cfg.elements = [GCInputLeftThumbstick, GCInputButtonA]
         virtualController = GCVirtualController(configuration: cfg)
-        virtualController?.connect()
+        // Joystick stays disconnected until startSceneView finishes.
+        // finishStartScene() → playIntro() → showDialog → nextLine calls connect().
     }
 }
