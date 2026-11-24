@@ -32,6 +32,7 @@ struct endingSceneView: View {
 //                .offset(x: 140)
             if showDialog, dialogIndex < lines.count {
                 DialogBox(line: lines[dialogIndex], isLast: dialogIndex == lines.count - 1, onNext: {
+                    RetroSFX.shared.playTick()
                     if dialogIndex < lines.count - 1 {
                         dialogIndex += 1
                     } else {

@@ -13,6 +13,15 @@ import GameController
 
 struct ContentView: View {
     @State private var game = GameModel()
+    @AppStorage(SoundMode.storageKey) private var soundMode: SoundMode = .all
+
+    /// Backsound plays while exploring the map; off during the intro, inside puzzles,
+    /// from the evil-I.R.I.S. ending onward, and when the sound button turns music off.
+    private var musicOn: Bool {
+        soundMode.musicOn
+            && !game.showNameEntry && !game.showStartScene && game.overlayRoom == nil
+            && !game.showEndingScene && !game.showBlackScreen
+    }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -31,7 +40,7 @@ struct ContentView: View {
             
             if game.overlayRoom == .scene2 {
                 TP1GeneratorRootView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -39,7 +48,7 @@ struct ContentView: View {
             
             if game.overlayRoom == .scene3 {
                 TP2LightsRootView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -47,7 +56,7 @@ struct ContentView: View {
 
             if game.overlayRoom == .scene4 {
                 TP3BookshelfView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -55,7 +64,7 @@ struct ContentView: View {
 
             if game.overlayRoom == .scene5 {
                 TP4LaptopView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -64,7 +73,7 @@ struct ContentView: View {
             if game.overlayRoom == .scene6 {
                 TP5PaintingRootView(
                     paintingRevealed: true,
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -104,6 +113,7 @@ struct ContentView: View {
 //                            .background(Color.white.opacity(0.12))
                             .clipShape(Capsule())
                         Button(action: {
+                            RetroSFX.shared.playConfirm()
                             game.tearDown()
                             game = GameModel()
                         }) {
@@ -154,6 +164,16 @@ struct ContentView: View {
                     )
                 }
             }
+
+            // Puzzles keep their own controls in the top-left corner, so the toggle hides there.
+            if game.overlayRoom == nil && !game.showTranscript {
+                SoundModeButton()
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+        }
+        .onChange(of: musicOn, initial: true) { _, on in
+            BackgroundMusic.shared.setPlaying(on)
         }
     }
 }

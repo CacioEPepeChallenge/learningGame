@@ -33,7 +33,7 @@ class GameScene: SKScene {
         1: [Tile(col: 24, row: 0), Tile(col: 24, row: 1), Tile(col: 24, row: 2)],
         2: [Tile(col: 13, row: 4), Tile(col: 13, row: 3), Tile(col: 12, row: 4)],
         3: [Tile(col: 15, row: 4), Tile(col: 16, row: 4)],
-        4: [Tile(col: 7, row: 4), Tile(col: 8, row: 4)],   // beside the desk, so the MC doesn't hide the PC screen
+        4: [Tile(col: 7, row: 4), Tile(col: 8, row: 4), Tile(col: 9, row: 4), Tile(col: 10, row: 4)],   // beside the desk and in front of the PC
         5: [Tile(col: 25, row: 4), Tile(col: 26, row: 4)]
     ]
     
@@ -66,7 +66,7 @@ class GameScene: SKScene {
     private var checkpointNodes: [SKSpriteNode] = []
     private var reached: Set<Int> = []
     let tileSize: CGFloat = 32
-    var heroTile = Tile(col:18, row:1)
+    var heroTile = Tile(col: 16, row: 4)
     var floorColors: (SKColor, SKColor) { (.systemGreen, .green) }
     var onCheckpoint: ((Int) -> Void)?
     var onExit: (() -> Void)?
@@ -188,6 +188,7 @@ class GameScene: SKScene {
         hero.anchorPoint = CGPoint(x: 0.5, y: 0)
         hero.position = center(of: heroTile)
         hero.zPosition = 10
+        setFacing(.left, walking: false)
         addChild(hero)
         onReady?()
         
@@ -225,10 +226,11 @@ class GameScene: SKScene {
     
     // MARK: Tap to walk
 
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard !inputLocked, let point = touches.first?.location(in: self) else { return }
-        handleTap(at: point)
-    }
+    // Tap to walk is turned off: the MC moves with the joystick only.
+    //    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    //        guard !inputLocked, let point = touches.first?.location(in: self) else { return }
+    //        handleTap(at: point)
+    //    }
 
     /// Tap on the glowing object → walk to its touchpoint and open it on arrival.
     /// Tap anywhere else → walk to the nearest reachable floor tile.
@@ -330,6 +332,7 @@ class GameScene: SKScene {
                 : next.col < current.col ? .left
                 : next.row > current.row ? .back : .front
             steps.append(.run { [weak self] in self?.setFacing(direction, walking: true) })
+            steps.append(.run { RetroSFX.shared.playStep() })
             steps.append(.move(to: center(of: next), duration: 0.12))
             steps.append(.run { [weak self] in self?.heroTile = next })
             current = next
@@ -456,6 +459,7 @@ class GameScene: SKScene {
             let next = current
             let direction: Facing = dx > 0 ? .right : .left
             steps.append(.run { [weak self] in self?.setFacing(direction, walking: true) })
+            steps.append(.run { RetroSFX.shared.playStep() })
             steps.append(.move(to: center(of: next), duration: 0.12))
             steps.append(.run { [weak self] in self?.heroTile = next })
         }
@@ -465,6 +469,7 @@ class GameScene: SKScene {
             let next = current
             let direction: Facing = dy > 0 ? .back : .front
             steps.append(.run { [weak self] in self?.setFacing(direction, walking: true) })
+            steps.append(.run { RetroSFX.shared.playStep() })
             steps.append(.move(to: center(of: next), duration: 0.12))
             steps.append(.run { [weak self] in self?.heroTile = next })
         }
@@ -518,9 +523,8 @@ class GameScene: SKScene {
             }
             return
         }
-        // Only the next unfinished touchpoint prompts; finished ones stay quiet
-        // so walking past the PC after TP4 doesn't reopen it.
-        if case .touchpoint(let id) = kind(of: heroTile), !completedTouchpoints.contains(id) {
+        // Finished touchpoints prompt too, with "LET'S TRY AGAIN" (TouchpointPromptDone).
+        if case .touchpoint(let id) = kind(of: heroTile) {
             onTouchpointPrompt?(id)
         }
     }

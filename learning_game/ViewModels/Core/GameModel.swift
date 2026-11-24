@@ -107,8 +107,17 @@ final class GameModel {
 
         // Replaying an old touchpoint must not roll the map back to an earlier overlay/background
         if isReplay {
+            RetroSFX.shared.playSuccess()
             showDialog([DialogLine(speaker: "IRIS", text: completion.text)])
             return
+        }
+
+        switch id {
+        case 1: RetroSFX.shared.playPowerUp()     // generator spins up
+        case 2: RetroSFX.shared.playLightOn()     // lamp on
+        case 5: RetroSFX.shared.playUnlock()      // safe code accepted
+        case 4: break                             // decrypt chirp below
+        default: RetroSFX.shared.playSuccess()
         }
 
         if id == 4 {
@@ -130,6 +139,7 @@ final class GameModel {
             pendingCompletion = completion
             showDialog(safeUnlocked) { [weak self] in
                 guard let self else { return }
+                RetroSFX.shared.playSafeOpen()
                 self.showSafeReveal = true
                 self.currentScene.inputLocked = true
                 self.virtualController?.disconnect()
@@ -159,6 +169,7 @@ final class GameModel {
         connectController()
         mapScene.swapGeneratorOverlay(to: "TP6")      // no overlay glow
         mapScene.showPaintingGlow()
+        RetroSFX.shared.playObjective()
         showDialog(laptopToPainting)
     }
 
@@ -173,11 +184,13 @@ final class GameModel {
             }
             pendingCompletion = nil
         }
+        RetroSFX.shared.playIrisReveal()
         showEndingScene = true
     }
 
     func finishEndingScene() {
         showEndingScene = false
+        RetroSFX.shared.playToBeContinued()
         showBlackScreen = true
     }
 
@@ -189,6 +202,7 @@ final class GameModel {
     func finishNameEntry(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         playerName = trimmed.isEmpty ? "Anonymous" : trimmed
+        RetroSFX.shared.playConfirm()
         showNameEntry = false
     }
 
@@ -205,6 +219,8 @@ final class GameModel {
     }
 
     func showTouchpointPrompt(_ id: Int) {
+          // Each step inside the area re-sends the prompt; only ping when it first appears.
+          if activeTouchpoint != id { RetroSFX.shared.playPrompt() }
           activeTouchpoint = id
 //          currentScene.inputLocked = true
 //          virtualController?.disconnect()
@@ -223,19 +239,24 @@ final class GameModel {
         inProgressTouchPoint = id
         switch id {
         case 4:
+            RetroSFX.shared.playConfirm()
             showDialog(laptopArrival) { [weak self] in
+                RetroSFX.shared.playEnter()
                 self?.openOverlay(room)
             }
         case 5:
             mapScene.hideObjectGlow()
             if paintingRevealed {
+                RetroSFX.shared.playEnter()
                 openOverlay(room)
             } else {
+                RetroSFX.shared.playSlide()
                 showPaintingReveal = true
                 mapScene.inputLocked = true
                 virtualController?.disconnect()
             }
         default:
+            RetroSFX.shared.playEnter()
             openOverlay(room)
         }
     }
@@ -290,6 +311,12 @@ final class GameModel {
         mapScene.inputLocked = false
         connectController()
     }
+
+    /// The player left a puzzle without finishing it.
+    func leaveOverlay() {
+        RetroSFX.shared.playBack()
+        closeOverlay()
+    }
     
     
     func showDialog(_ lines: [DialogLine], onComplete: (() -> Void)? = nil) {
@@ -302,6 +329,7 @@ final class GameModel {
     }
     
     func nextLine() {
+        RetroSFX.shared.playTick()
         if dialogIndex < dialogLines.count - 1 {
             dialogIndex += 1
         } else {
@@ -411,6 +439,7 @@ final class GameModel {
             DialogLine(speaker: playerName, text: "...Fine. Where do we start?")
         ]) { [weak self] in
             self?.mapScene.showGeneratorOverlay()
+            RetroSFX.shared.playObjective()
         }
     }
 
