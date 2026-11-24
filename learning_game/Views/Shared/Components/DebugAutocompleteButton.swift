@@ -9,7 +9,6 @@ struct DebugAutocompleteButton: View {
     let action: () -> Void
 
     var body: some View {
-        #if DEBUG
         Button(action: action) {
             Text("DEBUG: complete")
                 .font(.system(.caption2, design: .monospaced).bold())
@@ -20,8 +19,5 @@ struct DebugAutocompleteButton: View {
                 .clipShape(Capsule())
         }
         .padding(12)
-        #else
-        EmptyView()
-        #endif
     }
 }
