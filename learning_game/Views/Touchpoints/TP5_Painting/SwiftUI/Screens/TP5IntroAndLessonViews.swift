@@ -246,10 +246,12 @@ struct TP5SafeOpenView: View {
                 GameCardHeader(title: "Congratulations", subtitle: "All five deadbolts are open.")
                     .offset(x: 26, y: 21)
 
-                AnimatedGIFView(name: "painting_safe")
-                    .frame(width: 128, height: 192)
-                    .shadow(color: GameColor.accent.opacity(0.45), radius: 18)
-                    .offset(x: 70, y: 104)
+                // Leo's safe: every deadbolt light green, every latch retracted.
+                SafeArtView(unit: 4.4,
+                            bolts: Array(repeating: true, count: 5),
+                            latches: [.open, .open, .open])
+                    .shadow(color: GameColor.success.opacity(0.45), radius: 18)
+                    .offset(x: 76, y: 112)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("WHAT YOU LEARNED")

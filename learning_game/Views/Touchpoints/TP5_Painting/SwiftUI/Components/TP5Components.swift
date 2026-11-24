@@ -12,68 +12,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Sprite slot
-
-/// Shows the sprite `name` from Sprites.xcassets if it exists, otherwise a
-/// drawn fallback with a dashed "placeholder" outline and the asset name, so
-/// you can see exactly where art goes. Drop an image with that name into the
-/// asset catalog and it replaces the fallback automatically.
-///
-/// Animated sprites: add frames named `name_1`, `name_2`, … and pass `frames`.
-struct TP5Sprite<Fallback: View>: View {
-    let name: String
-    var frames = 1
-    var fps: Double = 6
-    @ViewBuilder var fallback: () -> Fallback
-
-    var body: some View {
-        if frames > 1, UIImage(named: "\(name)_1") != nil {
-            TimelineView(.periodic(from: .now, by: 1 / fps)) { timeline in
-                let i = Int(timeline.date.timeIntervalSinceReferenceDate * fps) % frames + 1
-                PixelImage("\(name)_\(i)")
-            }
-        } else if UIImage(named: name) != nil {
-            PixelImage(name)
-        } else {
-            fallback()
-                .overlay { TP5PlaceholderTag(name: name) }
-        }
-    }
-}
-
-extension TP5Sprite where Fallback == EmptyView {
-    init(_ name: String, frames: Int = 1, fps: Double = 6) {
-        self.init(name: name, frames: frames, fps: fps) { EmptyView() }
-    }
-}
-
-/// Dashed outline + asset name, shown only in debug builds.
-struct TP5PlaceholderTag: View {
-    let name: String
-
-    var body: some View {
-        #if DEBUG
-        GeometryReader { geo in
-            RoundedRectangle(cornerRadius: 3)
-                .strokeBorder(GameColor.info.opacity(0.55), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                .overlay(alignment: .bottom) {
-                    if geo.size.width >= 44 {
-                        Text(name)
-                            .font(GameFont.play(7))
-                            .foregroundStyle(GameColor.info.opacity(0.85))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                            .padding(.horizontal, 2)
-                            .background(GameColor.black.opacity(0.6))
-                            .padding(.bottom, 1)
-                    }
-                }
-        }
-        .allowsHitTesting(false)
-        #endif
-    }
-}
-
 // MARK: - Lock dots (Figma ① ② ③ progress)
 
 struct TP5LockDots: View {

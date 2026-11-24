@@ -82,7 +82,9 @@ final class TP5PaintingViewModel {
         }
     }
 
-    init(startAt screen: TP5Screen = .intro) {
+    /// `paintingRevealed`: the game already played the painting-reveal animation,
+    /// so the intro card starts with the safe uncovered.
+    init(startAt screen: TP5Screen = .intro, paintingRevealed: Bool = false) {
         currentScreen = screen
         defineCall.onSolved   = { [weak self] in self?.openedLocks.insert(1) }
         traceCalls.onSolved   = { [weak self] in self?.openedLocks.insert(2) }
@@ -95,7 +97,7 @@ final class TP5PaintingViewModel {
         } else if screen == .safeOpen {
             openedLocks = Set(1...5)
         }
-        if screen != .intro { isPaintingMoved = true }
+        if screen != .intro || paintingRevealed { isPaintingMoved = true }
     }
 
     func goToNext() {

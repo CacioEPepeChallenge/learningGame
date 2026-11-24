@@ -23,8 +23,8 @@ struct TP5PaintingRootView: View {
     }
 
     /// Convenience for the game layer: a fresh Touchpoint 5 run with callbacks.
-    init(onClose: @escaping () -> Void, onComplete: @escaping () -> Void) {
-        let vm = TP5PaintingViewModel()
+    init(paintingRevealed: Bool = false, onClose: @escaping () -> Void, onComplete: @escaping () -> Void) {
+        let vm = TP5PaintingViewModel(paintingRevealed: paintingRevealed)
         vm.onClose = onClose
         vm.onComplete = onComplete
         _viewModel = State(initialValue: vm)
@@ -59,6 +59,9 @@ struct TP5PaintingRootView: View {
             .environment(\.gameBackAction, viewModel.canGoBack ? { viewModel.goBack() } : nil)
             .id(screen)
             .transition(.opacity)
+            .overlay(alignment: .topTrailing) {
+                DebugAutocompleteButton(action: { viewModel.onComplete?() })
+            }
         }
     }
 }

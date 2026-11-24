@@ -2,15 +2,26 @@
 //  TP5Stages.swift
 //  learning_game
 //
-//  The animated "stage" on the left of each Touchpoint 5 lock card, plus the
-//  painting reveal on the intro card. Every visual uses a TP5Sprite slot:
-//  until the art exists you see a drawn stand-in with a dashed outline and the
-//  asset name (debug builds). See TP5_SPRITES.md for the full list.
+//  The visual on the left of each Touchpoint 5 card. Every lock works on the
+//  SAME object the player found behind the painting: Leo's wall safe, drawn
+//  from the game's own sprite (safe_open_slow.gif) via SafeArtView.
+//
+//    Intro   · slide the painting (same 32 × 48 scale as the safe) to reveal it
+//    Lock 1  · disengage(): the dial turns, the T-handle pulls
+//    Lock 2  · signals: flash() lights the safe's red LED, beep() chirps
+//    Lock 3  · the safe's own dial, close up, turning to 7 · 3 · 8
+//    Lock 4  · return values flow into the safe's keypad display
+//    Lock 5  · the three latches on the door edge retract one by one
+//
+//  The 5 lights on the safe's bottom bezel are the five deadbolts: they turn
+//  green as each lock is solved, on every card.
 //
 
 import SwiftUI
 
-// MARK: - Intro · slide the painting aside
+private func boltLights(_ opened: Set<Int>) -> [Bool] { (1...5).map(opened.contains) }
+
+// MARK: - Intro · slide the painting off the safe
 
 struct TP5PaintingReveal: View {
     let isMoved: Bool
@@ -19,243 +30,155 @@ struct TP5PaintingReveal: View {
     @State private var drag: CGFloat = 0
     @State private var hintPulse = false
 
-    var body: some View {
-        ZStack {
-            // The safe hidden behind the painting.
-            TP5Sprite(name: "tp5_safe_closed") { TP5VectorSafe(lit: 0) }
-                .frame(width: 132, height: 160)
+    /// Painting and safe share the 32 × 48 art grid; 4 pt per art pixel.
+    private let u: CGFloat = 4
 
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            SafeArtView(unit: u)
+                .offset(x: 4 * u, y: 7 * u)
+
+            // The painting slides left off the safe, like painting_safe.gif.
             PixelImage("painting")
-                .frame(width: 128, height: 192)
-                .shadow(color: GameColor.black.opacity(0.6), radius: 8, x: 4, y: 6)
-                .rotationEffect(.degrees(isMoved ? 4 : Double(drag) / 20), anchor: .topLeading)
-                .offset(x: isMoved ? 92 : drag, y: isMoved ? 6 : 0)
+                .frame(width: 32 * u, height: 48 * u)
+                .shadow(color: GameColor.black.opacity(0.6), radius: 6, x: 3, y: 4)
+                .offset(x: isMoved ? -29 * u : drag)
                 .gesture(
                     DragGesture()
-                        .onChanged { drag = max(0, $0.translation.width) }
+                        .onChanged { drag = min(0, $0.translation.width) }
                         .onEnded { value in
-                            if value.translation.width > 50 {
-                                withAnimation(.spring(duration: 0.6, bounce: 0.3)) { onMove() }
+                            if value.translation.width < -40 {
+                                withAnimation(.easeInOut(duration: 0.7)) { onMove() }
                             }
                             withAnimation(.spring(duration: 0.4)) { drag = 0 }
                         }
                 )
-                .onTapGesture { withAnimation(.spring(duration: 0.6, bounce: 0.3)) { onMove() } }
+                .onTapGesture { withAnimation(.easeInOut(duration: 0.7)) { onMove() } }
                 .accessibilityLabel(isMoved ? "Painting, moved aside" : "Painting. Slide it aside")
                 .accessibilityAddTraits(.isButton)
 
             if !isMoved {
-                Text("SLIDE THE PAINTING ›")
+                Text("‹ SLIDE THE PAINTING")
                     .font(GameFont.silkscreen(9))
                     .foregroundStyle(GameColor.info)
                     .opacity(hintPulse ? 1 : 0.35)
-                    .offset(y: 112)
+                    .frame(width: 32 * u)
+                    .offset(y: 48 * u + 6)
                     .onAppear {
                         withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { hintPulse = true }
                     }
             }
         }
-        .frame(width: 250, height: 210)
+        .frame(width: 32 * u, height: 48 * u + 20, alignment: .topLeading)
+        .padding(.leading, 116)
+        .frame(width: 250, height: 210, alignment: .topLeading)
     }
 }
 
-/// Drawn stand-in for the safe: grey door, dial, and five bolt lights.
-struct TP5VectorSafe: View {
-    /// How many of the five bolt lights are green.
-    var lit: Int
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(GameColor.slateGrey)
-                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(GameColor.ashGrey, lineWidth: 3))
-            RoundedRectangle(cornerRadius: 3)
-                .strokeBorder(GameColor.black.opacity(0.5), lineWidth: 2)
-                .padding(12)
-            TP5VectorDial()
-                .frame(width: 46, height: 46)
-                .offset(y: -12)
-            HStack(spacing: 6) {
-                ForEach(0..<5, id: \.self) { i in
-                    Circle()
-                        .fill(i < lit ? GameColor.success : GameColor.error)
-                        .frame(width: 8, height: 8)
-                        .shadow(color: (i < lit ? GameColor.success : GameColor.error).opacity(0.8), radius: 3)
-                }
-            }
-            .offset(y: 42)
-        }
-    }
-}
-
-/// Drawn dial: ring, ten ticks, centre knob and a marker.
-struct TP5VectorDial: View {
-    var body: some View {
-        ZStack {
-            Circle().fill(GameColor.black.opacity(0.7))
-            Circle().strokeBorder(GameColor.lightGrey, lineWidth: 2)
-            ForEach(0..<10, id: \.self) { i in
-                Rectangle()
-                    .fill(GameColor.lightGrey)
-                    .frame(width: 1.5, height: 5)
-                    .offset(y: -15)
-                    .rotationEffect(.degrees(Double(i) * 36))
-            }
-            Circle().fill(GameColor.ashGrey).frame(width: 12, height: 12)
-            Rectangle().fill(GameColor.error).frame(width: 2, height: 9).offset(y: -9)
-        }
-    }
-}
-
-// MARK: - Lock 1 · the safe door (dial + lever + bolt)
+// MARK: - Lock 1 · dial + handle
 
 struct TP5SafeDoorStage: View {
     let dialTurns: Int
     let leverPulled: Bool
     let boltOpen: Bool
     let jammed: Bool
+    var opened: Set<Int> = []
 
     @State private var sparkOn = false
 
     var body: some View {
         TP5StageFrame(glow: boltOpen ? GameColor.success : jammed ? GameColor.error : nil) {
-            ZStack {
-                TP5Sprite(name: "tp5_safe_door") {
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(GameColor.slateGrey)
-                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(GameColor.ashGrey, lineWidth: 2))
-                }
-                .frame(width: 104, height: 116)
-                .offset(y: -10)
-
-                TP5Sprite(name: "tp5_safe_dial") { TP5VectorDial() }
-                    .frame(width: 48, height: 48)
-                    .rotationEffect(.degrees(Double(dialTurns) * 252))
-                    .animation(.spring(duration: 0.7, bounce: 0.25), value: dialTurns)
-                    .offset(x: -18, y: -26)
-
-                TP5Sprite(name: "tp5_safe_lever") {
-                    VStack(spacing: 0) {
-                        Circle().fill(GameColor.ashGrey).frame(width: 10, height: 10)
-                        Capsule().fill(GameColor.lightGrey).frame(width: 6, height: 30)
-                        Circle().fill(GameColor.burgundy).frame(width: 12, height: 12)
+            VStack(spacing: 6) {
+                ZStack(alignment: .topLeading) {
+                    SafeArtView(unit: 3.7,
+                                dialQuarterTurns: dialTurns,
+                                handlePulled: leverPulled || jammed,
+                                bolts: boltLights(boltOpen ? opened.union([1]) : opened))
+                    if jammed {
+                        PixelImage("spark")
+                            .frame(width: 28, height: 28)
+                            .opacity(sparkOn ? 1 : 0.3)
+                            .offset(x: 30, y: 70)
+                            .onAppear {
+                                withAnimation(.easeInOut(duration: 0.12).repeatCount(8, autoreverses: true)) { sparkOn = true }
+                            }
+                            .transition(.opacity)
                     }
                 }
-                .frame(width: 14, height: 52)
-                .rotationEffect(.degrees(leverPulled ? -65 : jammed ? -15 : 0), anchor: .top)
-                .animation(.spring(duration: 0.5, bounce: jammed ? 0.7 : 0.3), value: leverPulled)
-                .animation(.spring(duration: 0.3, bounce: 0.8), value: jammed)
-                .offset(x: 26, y: -24)
-
-                // The deadbolt slides out of the door when it opens.
-                TP5Sprite(name: "tp5_safe_bolt") {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(boltOpen ? GameColor.success : GameColor.lightGrey)
-                }
-                .frame(width: 40, height: 10)
-                .offset(x: boltOpen ? 66 : 44, y: 30)
-                .animation(.spring(duration: 0.6, bounce: 0.2), value: boltOpen)
-
-                if jammed {
-                    PixelImage("spark")
-                        .frame(width: 30, height: 30)
-                        .opacity(sparkOn ? 1 : 0.3)
-                        .offset(x: 34, y: -4)
-                        .onAppear {
-                            withAnimation(.easeInOut(duration: 0.12).repeatCount(8, autoreverses: true)) { sparkOn = true }
-                        }
-                        .transition(.opacity)
-                }
-
-                Text(boltOpen ? "BOLT OPEN" : jammed ? "JAMMED" : "LOCKED")
-                    .font(GameFont.silkscreen(9))
+                Text(boltOpen ? "DEADBOLT 1 OPEN" : jammed ? "HANDLE JAMMED" : "LOCKED")
+                    .font(GameFont.silkscreen(8))
                     .foregroundStyle(boltOpen ? GameColor.success : jammed ? GameColor.error : GameColor.ashGrey)
-                    .offset(y: 66)
             }
+            .padding(.top, 6)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(boltOpen ? "The deadbolt is open" : jammed ? "The lever jammed" : "The safe is locked")
     }
 }
 
-// MARK: - Lock 2 · lamp + speaker signals
+// MARK: - Lock 2 · the safe's LED and buzzer
 
 struct TP5SignalStage: View {
     let lampOn: Bool
     let beepCount: Int
     let emitted: [P2Signal]
+    var opened: Set<Int> = []
 
     var body: some View {
         TP5StageFrame {
-            VStack(spacing: 6) {
-                HStack(spacing: 10) {
-                    PixelImage(lampOn ? "lamp_on" : "lamp_off")
-                        .frame(width: 52, height: 52)
-                        .shadow(color: GameColor.info.opacity(lampOn ? 0.9 : 0), radius: 14)
-                        .animation(.easeOut(duration: 0.12), value: lampOn)
-
-                    ZStack {
-                        Circle()
-                            .strokeBorder(GameColor.accent, lineWidth: 2)
-                            .frame(width: 44, height: 44)
-                            .keyframeAnimator(initialValue: RingState(), trigger: beepCount) { ring, value in
-                                ring.scaleEffect(value.scale).opacity(value.opacity)
-                            } keyframes: { _ in
-                                KeyframeTrack(\.scale) {
-                                    LinearKeyframe(0.6, duration: 0.01)
-                                    LinearKeyframe(1.5, duration: 0.5)
-                                }
-                                KeyframeTrack(\.opacity) {
-                                    LinearKeyframe(1, duration: 0.01)
-                                    LinearKeyframe(0, duration: 0.5)
-                                }
+            VStack(spacing: 5) {
+                ZStack {
+                    // beep(): a sound ring from the safe.
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(GameColor.accent, lineWidth: 2)
+                        .frame(width: 84, height: 108)
+                        .keyframeAnimator(initialValue: Ring(), trigger: beepCount) { ring, v in
+                            ring.scaleEffect(v.scale).opacity(v.opacity)
+                        } keyframes: { _ in
+                            KeyframeTrack(\.scale) {
+                                LinearKeyframe(0.95, duration: 0.01)
+                                LinearKeyframe(1.3, duration: 0.45)
                             }
-                        TP5Sprite(name: "tp5_speaker") { TP5VectorSpeaker() }
-                            .frame(width: 34, height: 34)
-                            .keyframeAnimator(initialValue: 1.0, trigger: beepCount) { view, s in
-                                view.scaleEffect(s)
-                            } keyframes: { _ in
-                                SpringKeyframe(1.25, duration: 0.12)
-                                SpringKeyframe(1.0, duration: 0.3)
+                            KeyframeTrack(\.opacity) {
+                                LinearKeyframe(0.9, duration: 0.01)
+                                LinearKeyframe(0, duration: 0.45)
                             }
-                    }
-                    .frame(width: 52, height: 52)
+                        }
+                    SafeArtView(unit: 3.1, ledOn: lampOn, bolts: boltLights(opened))
+                        .keyframeAnimator(initialValue: 0.0, trigger: beepCount) { safe, x in
+                            safe.offset(x: x)
+                        } keyframes: { _ in
+                            LinearKeyframe(1.5, duration: 0.04)
+                            LinearKeyframe(-1.5, duration: 0.04)
+                            LinearKeyframe(0, duration: 0.04)
+                        }
                 }
-                .padding(.top, 12)
+                .frame(height: 108)
+                .padding(.top, 6)
 
-                Text("OUTPUT")
-                    .font(GameFont.silkscreen(8))
+                Text("SIGNALS SENT")
+                    .font(GameFont.silkscreen(7))
                     .foregroundStyle(GameColor.ashGrey)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.fixed(20), spacing: 4), count: 5), spacing: 4) {
+                HStack(spacing: 3) {
                     ForEach(Array(emitted.enumerated()), id: \.offset) { _, s in
                         TP5SignalChip(signal: s, compact: true)
                             .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
                 }
+                .frame(height: 18)
                 .animation(.spring(duration: 0.3, bounce: 0.4), value: emitted.count)
                 Spacer(minLength: 0)
             }
         }
+        .onChange(of: beepCount) { RetroSFX.shared.playBlip() }
     }
 
-    private struct RingState {
-        var scale = 1.5
+    private struct Ring {
+        var scale = 1.3
         var opacity = 0.0
     }
 }
 
-struct TP5VectorSpeaker: View {
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 4).fill(GameColor.slateGrey)
-            Circle().fill(GameColor.black).padding(7)
-            Circle().fill(GameColor.ashGrey).padding(13)
-        }
-    }
-}
-
-/// flash / beep chip with a little icon (lamp or speaker).
+/// flash = the safe's red LED, beep = a sound wave.
 struct TP5SignalChip: View {
     let signal: P2Signal
     var compact = false
@@ -263,10 +186,13 @@ struct TP5SignalChip: View {
     var body: some View {
         HStack(spacing: 3) {
             if signal == .flash {
-                PixelImage("lamp_on").frame(width: 16, height: 16)
+                Rectangle()
+                    .fill(GameColor.peach)
+                    .frame(width: 5, height: 5)
+                    .shadow(color: GameColor.error, radius: 3)
+                    .frame(width: 12, height: 12)
             } else {
-                TP5Sprite(name: "tp5_speaker") { TP5VectorSpeaker() }
-                    .frame(width: 14, height: 14)
+                PixelSpriteView("px_audio").frame(width: 14, height: 9)
             }
             if !compact {
                 Text(signal.rawValue)
@@ -275,55 +201,65 @@ struct TP5SignalChip: View {
             }
         }
         .padding(.horizontal, compact ? 2 : 4)
-        .frame(width: compact ? 20 : nil, height: compact ? 20 : 24)
+        .frame(width: compact ? 20 : nil, height: compact ? 18 : 24)
         .background(RoundedRectangle(cornerRadius: 3).fill(signal == .flash ? GameColor.burgundy.opacity(0.6) : GameColor.accent2.opacity(0.8)))
     }
 }
 
-// MARK: - Lock 3 · the combination dial
+// MARK: - Lock 3 · the safe's dial, close up
 
 struct TP5DialStage: View {
     let needleAngle: Double
     let reading: Int
     let results: [Bool?]
 
+    private let size: CGFloat = 64
+
     var body: some View {
         TP5StageFrame(glow: results.allSatisfy { $0 == true } ? GameColor.success
                       : results.contains(false) ? GameColor.error : nil) {
-            VStack(spacing: 6) {
-                // Leo's clue, taped to the back of the painting.
-                TP5Sprite(name: "tp5_clue_note") {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(GameColor.peach)
-                        .rotationEffect(.degrees(-2))
-                }
-                .frame(width: 112, height: 28)
-                .overlay {
-                    HStack(spacing: 6) {
-                        ForEach(0..<3, id: \.self) { i in
-                            Text("\(P3Engine.combination[i])")
-                                .font(GameFont.silkscreen(14))
-                                .foregroundStyle(results[i] == true ? GameColor.success
-                                                 : results[i] == false ? GameColor.error : GameColor.black)
-                            if i < 2 { Text("·").font(GameFont.play(14)).foregroundStyle(GameColor.black) }
-                        }
+            VStack(spacing: 5) {
+                // Leo's note from the back of the painting.
+                HStack(spacing: 5) {
+                    ForEach(0..<3, id: \.self) { i in
+                        Text("\(P3Engine.combination[i])")
+                            .font(GameFont.silkscreen(13))
+                            .foregroundStyle(results[i] == true ? GameColor.success
+                                             : results[i] == false ? GameColor.error : GameColor.black)
+                        if i < 2 { Text("·").font(GameFont.play(13)).foregroundStyle(GameColor.black) }
                     }
                 }
-                .padding(.top, 8)
+                .frame(width: 104, height: 22)
+                .background(RoundedRectangle(cornerRadius: 1).fill(GameColor.peach))
+                .rotationEffect(.degrees(-2))
+                .padding(.top, 5)
 
                 ZStack {
-                    TP5Sprite(name: "tp5_dial_face") { TP5VectorDialFace() }
-                        .frame(width: 100, height: 100)
-                    TP5Sprite(name: "tp5_dial_needle") {
-                        Capsule().fill(GameColor.accent)
-                            .shadow(color: GameColor.accent.opacity(0.8), radius: 3)
+                    // The real dial turns under a fixed index mark.
+                    ZStack {
+                        ArtImage(GameArt.safeDial)
+                            .frame(width: size, height: size)
+                            .clipShape(Circle())
+                        ForEach(0..<10, id: \.self) { i in
+                            // Numbers ride on the dial but stay upright.
+                            Text("\(i)")
+                                .font(GameFont.play(10, bold: true))
+                                .foregroundStyle(GameColor.lightGrey)
+                                .rotationEffect(.degrees(needleAngle - Double(i) * 36))
+                                .offset(y: -(size / 2 + 9))
+                                .rotationEffect(.degrees(Double(i) * 36))
+                        }
                     }
-                    .frame(width: 4, height: 36)
-                    .offset(y: -18)
-                    .rotationEffect(.degrees(needleAngle))
-                    .animation(.spring(duration: 0.22, bounce: 0.3), value: needleAngle)
-                    Circle().fill(GameColor.lightGrey).frame(width: 10, height: 10)
+                    .rotationEffect(.degrees(-needleAngle))
+                    .animation(.spring(duration: 0.22, bounce: 0.2), value: needleAngle)
+
+                    // Index mark, fixed at the top.
+                    IndexMark()
+                        .fill(GameColor.error)
+                        .frame(width: 10, height: 7)
+                        .offset(y: -(size / 2 + 20))
                 }
+                .frame(width: 120, height: 112)
 
                 Text("READING \(reading)")
                     .font(GameFont.silkscreen(9))
@@ -336,29 +272,20 @@ struct TP5DialStage: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Dial reads \(reading). Combination 7, 3, 8.")
     }
-}
 
-/// Drawn dial face with 0…9 around the rim (0 at the top, clockwise).
-struct TP5VectorDialFace: View {
-    var body: some View {
-        GeometryReader { geo in
-            let r = geo.size.width / 2
-            ZStack {
-                Circle().fill(GameColor.black)
-                Circle().strokeBorder(GameColor.slateGrey, lineWidth: 3)
-                ForEach(0..<10, id: \.self) { i in
-                    let a = Double(i) * 36 * .pi / 180
-                    Text("\(i)")
-                        .font(GameFont.play(11, bold: true))
-                        .foregroundStyle(GameColor.lightGrey)
-                        .position(x: r + sin(a) * (r - 13), y: r - cos(a) * (r - 13))
-                }
+    private struct IndexMark: Shape {
+        func path(in r: CGRect) -> Path {
+            Path { p in
+                p.move(to: CGPoint(x: r.minX, y: r.minY))
+                p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+                p.addLine(to: CGPoint(x: r.midX, y: r.maxY))
+                p.closeSubpath()
             }
         }
     }
 }
 
-// MARK: - Lock 4 · the function machines
+// MARK: - Lock 4 · return values → the safe's keypad
 
 struct TP5MachineStage: View {
     /// Inner → outer.
@@ -368,43 +295,51 @@ struct TP5MachineStage: View {
     let orbPosition: Int
     let keypad: Int?
 
-    private let machineY: [CGFloat] = [30, 70, 110]
-    private let orbY: [CGFloat] = [14, 64, 104, 148]
+    private let rowY: [CGFloat] = [24, 54, 84]
+    private let orbY: [CGFloat] = [6, 42, 72, 124]
 
     var body: some View {
         TP5StageFrame(glow: keypad.map { $0 == P4Engine.target ? GameColor.success : GameColor.error }) {
             ZStack(alignment: .topLeading) {
-                // The pipe the value travels down.
                 Rectangle()
                     .fill(GameColor.slateGrey)
-                    .frame(width: 2, height: 136)
-                    .offset(x: 21, y: 14)
+                    .frame(width: 2, height: 124)
+                    .offset(x: 21, y: 10)
 
-                Text("INPUT")
+                Text("4 IN")
                     .font(GameFont.silkscreen(8))
                     .foregroundStyle(GameColor.ashGrey)
-                    .offset(x: 42, y: 9)
+                    .offset(x: 42, y: 6)
 
+                // The functions, in the order they run (inner first), styled like the code.
                 ForEach(0..<3, id: \.self) { k in
-                    machine(pipeline[k], active: activeMachine == k)
-                        .frame(width: 88, height: 28)
-                        .offset(x: 42, y: machineY[k])
+                    functionChip(pipeline[k], active: activeMachine == k)
+                        .frame(width: 88, height: 22)
+                        .offset(x: 42, y: rowY[k])
                 }
 
-                TP5Sprite(name: "tp5_keypad") {
-                    RoundedRectangle(cornerRadius: 3).fill(GameColor.black)
-                        .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(GameColor.slateGrey, lineWidth: 1))
-                }
-                .frame(width: 88, height: 18)
-                .overlay {
-                    Text(keypad.map { "\($0) / 22" } ?? "-- / 22")
-                        .font(GameFont.silkscreen(9))
+                Text("SAFE KEYPAD")
+                    .font(GameFont.silkscreen(7))
+                    .foregroundStyle(GameColor.info)
+                    .offset(x: 42, y: 112)
+
+                // The safe's keypad display: the final return value lands here.
+                HStack(spacing: 4) {
+                    Text(keypad.map { "\($0)" } ?? "--")
+                        .font(GameFont.silkscreen(12))
                         .foregroundStyle(keypad == nil ? GameColor.ashGrey
                                          : keypad == P4Engine.target ? GameColor.success : GameColor.error)
+                        .contentTransition(.numericText())
+                    Text("/ 22")
+                        .font(GameFont.silkscreen(9))
+                        .foregroundStyle(GameColor.ashGrey)
                 }
-                .offset(x: 42, y: 139)
+                .frame(width: 88, height: 24)
+                .background(RoundedRectangle(cornerRadius: 2).fill(GameColor.black))
+                .overlay(RoundedRectangle(cornerRadius: 2).strokeBorder(GameColor.info, lineWidth: 2))
+                .offset(x: 42, y: 124)
 
-                // The value orb.
+                // The value travelling down.
                 Text("\(orbValue)")
                     .font(GameFont.play(11, bold: true))
                     .foregroundStyle(GameColor.black)
@@ -412,7 +347,7 @@ struct TP5MachineStage: View {
                     .frame(width: 24, height: 24)
                     .background(Circle().fill(GameColor.accent))
                     .shadow(color: GameColor.accent.opacity(0.9), radius: 6)
-                    .offset(x: 10, y: orbY[orbPosition] - 12)
+                    .offset(x: 10, y: orbY[orbPosition])
                     .animation(.spring(duration: 0.5, bounce: 0.3), value: orbPosition)
                     .animation(.snappy, value: orbValue)
             }
@@ -421,98 +356,55 @@ struct TP5MachineStage: View {
     }
 
     @ViewBuilder
-    private func machine(_ f: P4Function?, active: Bool) -> some View {
+    private func functionChip(_ f: P4Function?, active: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 3)
         if let f {
-            TP5Sprite(name: "tp5_machine_\(f.rawValue)") {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(GameColor.midnight)
-                    .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(GameColor.mauve, lineWidth: 1))
-            }
-            .overlay {
-                Text(f.rawValue)
-                    .font(GameFont.play(10, bold: true))
-                    .foregroundStyle(GameColor.white)
-            }
-            .shadow(color: GameColor.accent.opacity(active ? 0.9 : 0), radius: 8)
-            .scaleEffect(active ? 1.08 : 1)
-            .animation(.spring(duration: 0.3, bounce: 0.5), value: active)
+            Text("\(f.rawValue)()")
+                .font(GameFont.play(11, bold: active))
+                .foregroundStyle(GameColor.white)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(shape.fill(GameColor.midnight.opacity(0.9)))
+                .overlay(shape.strokeBorder(active ? GameColor.accent : GameColor.mauve.opacity(0.6), lineWidth: active ? 1.5 : 1))
+                .shadow(color: GameColor.accent.opacity(active ? 0.8 : 0), radius: 6)
+                .scaleEffect(active ? 1.06 : 1)
+                .animation(.spring(duration: 0.3, bounce: 0.5), value: active)
         } else {
-            RoundedRectangle(cornerRadius: 4)
-                .strokeBorder(GameColor.slateGrey, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            shape.strokeBorder(GameColor.slateGrey, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                 .overlay(Text("?").font(GameFont.silkscreen(10)).foregroundStyle(GameColor.slateGrey))
         }
     }
 }
 
-// MARK: - Lock 5 · three latches
+// MARK: - Lock 5 · the door latches
 
 struct TP5LatchStage: View {
     let latches: [LatchState]
     let activeLatch: Int?
     let jammedLatch: Int?
     let binding: String?
+    var opened: Set<Int> = []
 
     var body: some View {
         TP5StageFrame(glow: latches.allSatisfy { $0 == .open } ? GameColor.success
                       : jammedLatch != nil ? GameColor.error : nil) {
-            VStack(spacing: 9) {
-                Text("LATCHES")
-                    .font(GameFont.silkscreen(8))
-                    .foregroundStyle(GameColor.ashGrey)
-                    .padding(.top, 10)
-
-                ForEach(0..<3, id: \.self) { i in
-                    latch(i + 1, state: latches[i])
-                }
+            VStack(spacing: 6) {
+                SafeArtView(unit: 3.7,
+                            bolts: boltLights(latches.allSatisfy { $0 == .open } ? opened.union([5]) : opened),
+                            latches: latches,
+                            activeLatch: activeLatch,
+                            jammedLatch: jammedLatch)
+                    .padding(.top, 6)
 
                 Text(binding ?? "id = ?")
                     .font(GameFont.play(11, bold: true))
                     .foregroundStyle(binding == nil ? GameColor.slateGrey : GameColor.accent)
                     .padding(.horizontal, 8)
-                    .frame(height: 20)
+                    .frame(height: 18)
                     .background(Capsule().fill(GameColor.midnight.opacity(0.8)))
                     .contentTransition(.numericText())
                     .animation(.snappy, value: binding)
                 Spacer(minLength: 0)
             }
         }
-    }
-
-    private func color(_ state: LatchState) -> Color {
-        switch state {
-        case .locked: GameColor.burgundy
-        case .unlatched: GameColor.info
-        case .open: GameColor.success
-        }
-    }
-
-    private func latch(_ n: Int, state: LatchState) -> some View {
-        let active = activeLatch == n
-        let jam = jammedLatch == n
-        return HStack(spacing: 6) {
-            Text("\(n)")
-                .font(GameFont.silkscreen(11))
-                .foregroundStyle(active ? GameColor.accent : GameColor.lightGrey)
-                .frame(width: 12)
-            ZStack(alignment: .leading) {
-                TP5Sprite(name: "tp5_latch_frame") {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(GameColor.black)
-                        .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(GameColor.slateGrey, lineWidth: 1))
-                }
-                TP5Sprite(name: "tp5_latch_bar") {
-                    Capsule().fill(color(state))
-                }
-                .frame(width: 44, height: 10)
-                .offset(x: state == .open ? 46 : 4, y: state == .unlatched ? -3 : 0)
-                .animation(.spring(duration: 0.45, bounce: 0.3), value: state)
-            }
-            .frame(width: 96, height: 24)
-            .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(GameColor.accent, lineWidth: active ? 1.5 : 0))
-            .modifier(GameShake(amount: 3, animatableData: jam ? 2 : 0))
-            .animation(.linear(duration: 0.4), value: jam)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Latch \(n): \(state == .open ? "open" : state == .unlatched ? "unlatched" : "locked")")
     }
 }
