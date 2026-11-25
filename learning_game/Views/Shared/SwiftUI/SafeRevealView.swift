@@ -10,13 +10,13 @@ import WebKit
 
 struct SafeRevealView: View {
     let onComplete: () -> Void
-    var playerName: String = "Rudi"
+    var playerName: String = "Anonymous"
 
     private let duration: TimeInterval = 3.0
     private var lines: [DialogLine] {
         [
             DialogLine(speaker: "IRIS", text: "There it is. Plug my core module into your mobile device. We will track his coordinates."),
-            DialogLine(speaker: playerName, text: "Hang tight, Leo. We're coming.")
+            DialogLine(speaker: playerName, text: "OK will do it. Hang tight, Leo. We're coming.")
         ]
     }
     @State private var showDialog = false
@@ -36,6 +36,7 @@ struct SafeRevealView: View {
                 .offset(x: 140)
             if showDialog, dialogIndex < lines.count {
                 DialogBox(line: lines[dialogIndex], isLast: dialogIndex == lines.count - 1, onNext: {
+                    RetroSFX.shared.playTick()
                     if dialogIndex < lines.count - 1 {
                         dialogIndex += 1
                     } else {
