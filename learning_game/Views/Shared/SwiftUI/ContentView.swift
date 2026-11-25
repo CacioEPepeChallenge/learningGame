@@ -13,6 +13,15 @@ import GameController
 
 struct ContentView: View {
     @State private var game = GameModel()
+    @AppStorage(SoundMode.storageKey) private var soundMode: SoundMode = .all
+
+    /// Backsound plays while exploring the map; off during the intro, inside puzzles,
+    /// from the evil-I.R.I.S. ending onward, and when the sound button turns music off.
+    private var musicOn: Bool {
+        soundMode.musicOn
+            && !game.showNameEntry && !game.showStartScene && game.overlayRoom == nil
+            && !game.showEndingScene && !game.showBlackScreen
+    }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -20,6 +29,8 @@ struct ContentView: View {
                        transition: .fade(withDuration: 0.5),
                        debugOptions: [.showsFPS, .showsNodeCount])
             .ignoresSafeArea()
+            // New GameModel ("Start Again") → brand-new SKView, nothing carried over
+            .id(ObjectIdentifier(game))
 
             if game.currentRoom != nil {
                 Button("Back") { game.currentRoom = nil }
@@ -29,7 +40,7 @@ struct ContentView: View {
             
             if game.overlayRoom == .scene2 {
                 TP1GeneratorRootView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -37,7 +48,7 @@ struct ContentView: View {
             
             if game.overlayRoom == .scene3 {
                 TP2LightsRootView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -45,7 +56,7 @@ struct ContentView: View {
 
             if game.overlayRoom == .scene4 {
                 TP3BookshelfView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -53,7 +64,7 @@ struct ContentView: View {
 
             if game.overlayRoom == .scene5 {
                 TP4LaptopView(
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -62,7 +73,7 @@ struct ContentView: View {
             if game.overlayRoom == .scene6 {
                 TP5PaintingRootView(
                     paintingRevealed: true,
-                    onClose: game.closeOverlay,
+                    onClose: game.leaveOverlay,
                     onComplete: game.completeOverlay
                 )
                 .transition(.opacity)
@@ -94,14 +105,18 @@ struct ContentView: View {
                     Color.black
                         .ignoresSafeArea()
                     VStack(alignment: .trailing, spacing: 12) {
-                        Text("To be continued →")
+                        Text("To be continued...")
                             .font(.system(.title3, design: .monospaced).bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color.white.opacity(0.12))
+//                            .background(Color.white.opacity(0.12))
                             .clipShape(Capsule())
-                        Button(action: { game = GameModel() }) {
+                        Button(action: {
+                            RetroSFX.shared.playConfirm()
+                            game.tearDown()
+                            game = GameModel()
+                        }) {
                             Text("Start Again")
                                 .font(.system(.title3, design: .monospaced).bold())
                                 .foregroundStyle(.black)
@@ -137,11 +152,28 @@ struct ContentView: View {
             
             if let id = game.activeTouchpoint,
                let prompt = game.touchpointPrompts[id] {
-                TouchpointPrompt(
-                    line: DialogLine(speaker: "IRIS", text: prompt.text),
-                    onConfirm: { game.confirmTouchpoint() }
-                )
+                if game.completedTouchpoints.contains(id) {
+                    TouchpointPromptDone(
+                        line: DialogLine(speaker: "IRIS", text: prompt.text),
+                        onConfirm: { game.confirmTouchpoint() }
+                    )
+                } else {
+                    TouchpointPrompt(
+                        line: DialogLine(speaker: "IRIS", text: prompt.text),
+                        onConfirm: { game.confirmTouchpoint() }
+                    )
+                }
             }
+
+            // Puzzles keep their own controls in the top-left corner, so the toggle hides there.
+            if game.overlayRoom == nil && !game.showTranscript {
+                SoundModeButton()
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+        }
+        .onChange(of: musicOn, initial: true) { _, on in
+            BackgroundMusic.shared.setPlaying(on)
         }
     }
 }

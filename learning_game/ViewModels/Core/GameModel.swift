@@ -20,7 +20,7 @@ final class GameModel {
     var dialogIndex = 0
     var isDialogActive: Bool { !dialogLines.isEmpty }
     var overlayRoom: Room? = nil
-    var playerName: String = "Rudi"
+    var playerName: String = "Anonymous"
     var showNameEntry: Bool = true
     var showStartScene: Bool = true
     var showPaintingReveal: Bool = false
@@ -87,6 +87,8 @@ final class GameModel {
     /// The painting-reveal animation has played (so re-entering TP5 skips it).
     private var paintingRevealed = false
     
+    var completedTouchpoints: Set<Int> = []
+
     private var dialogCompletion: (() -> Void)?
 
     
@@ -101,8 +103,25 @@ final class GameModel {
         closeOverlay()
         guard let id = inProgressTouchPoint else { return }
         mapScene.completeTouchpoint(id)
+        let isReplay = completedTouchpoints.contains(id)
+        completedTouchpoints.insert(id)
         inProgressTouchPoint = nil
         guard let completion = touchpointCompletions[id] else { return }
+
+        // Replaying an old touchpoint must not roll the map back to an earlier overlay/background
+        if isReplay {
+            RetroSFX.shared.playSuccess()
+            showDialog([DialogLine(speaker: "IRIS", text: completion.text)])
+            return
+        }
+
+        switch id {
+        case 1: RetroSFX.shared.playPowerUp()     // generator spins up
+        case 2: RetroSFX.shared.playLightOn()     // lamp on
+        case 5: RetroSFX.shared.playUnlock()      // safe code accepted
+        case 4: break                             // decrypt chirp below
+        default: RetroSFX.shared.playSuccess()
+        }
 
         if id == 4 {
             // Laptop decrypted: screen flips, decrypt chirp, then the readout.
@@ -123,6 +142,7 @@ final class GameModel {
             pendingCompletion = completion
             showDialog(safeUnlocked) { [weak self] in
                 guard let self else { return }
+                RetroSFX.shared.playSafeOpen()
                 self.showSafeReveal = true
                 self.currentScene.inputLocked = true
                 self.virtualController?.disconnect()
@@ -149,9 +169,10 @@ final class GameModel {
     func finishTranscript() {
         showTranscript = false
         mapScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
         mapScene.swapGeneratorOverlay(to: "TP6")      // no overlay glow
         mapScene.showPaintingGlow()
+        RetroSFX.shared.playObjective()
         showDialog(laptopToPainting)
     }
 
@@ -166,11 +187,13 @@ final class GameModel {
             }
             pendingCompletion = nil
         }
+        RetroSFX.shared.playIrisReveal()
         showEndingScene = true
     }
 
     func finishEndingScene() {
         showEndingScene = false
+        RetroSFX.shared.playToBeContinued()
         showBlackScreen = true
     }
 
@@ -181,7 +204,8 @@ final class GameModel {
 
     func finishNameEntry(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        playerName = trimmed.isEmpty ? "Rudi" : trimmed
+        playerName = trimmed.isEmpty ? "Anonymous" : trimmed
+        RetroSFX.shared.playConfirm()
         showNameEntry = false
     }
 
@@ -198,6 +222,8 @@ final class GameModel {
     }
 
     func showTouchpointPrompt(_ id: Int) {
+          // Each step inside the area re-sends the prompt; only ping when it first appears.
+          if activeTouchpoint != id { RetroSFX.shared.playPrompt() }
           activeTouchpoint = id
 //          currentScene.inputLocked = true
 //          virtualController?.disconnect()
@@ -216,19 +242,24 @@ final class GameModel {
         inProgressTouchPoint = id
         switch id {
         case 4:
+            RetroSFX.shared.playConfirm()
             showDialog(laptopArrival) { [weak self] in
+                RetroSFX.shared.playEnter()
                 self?.openOverlay(room)
             }
         case 5:
             mapScene.hideObjectGlow()
             if paintingRevealed {
+                RetroSFX.shared.playEnter()
                 openOverlay(room)
             } else {
+                RetroSFX.shared.playSlide()
                 showPaintingReveal = true
                 mapScene.inputLocked = true
                 virtualController?.disconnect()
             }
         default:
+            RetroSFX.shared.playEnter()
             openOverlay(room)
         }
     }
@@ -269,7 +300,7 @@ final class GameModel {
     func cancelTouchpoint() {
         activeTouchpoint = nil
         currentScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
     }
     
     func openOverlay(_ room: Room) {
@@ -281,7 +312,13 @@ final class GameModel {
     func closeOverlay() {
         overlayRoom = nil
         mapScene.inputLocked = false
-        virtualController?.connect()
+        connectController()
+    }
+
+    /// The player left a puzzle without finishing it.
+    func leaveOverlay() {
+        RetroSFX.shared.playBack()
+        closeOverlay()
     }
     
     
@@ -295,12 +332,13 @@ final class GameModel {
     }
     
     func nextLine() {
+        RetroSFX.shared.playTick()
         if dialogIndex < dialogLines.count - 1 {
             dialogIndex += 1
         } else {
             dialogLines = []
             ([mapScene] + Array(rooms.values)).forEach { $0.inputLocked = false }
-            virtualController?.connect()
+            connectController()
             let completion = dialogCompletion
             dialogCompletion = nil
             completion?()
@@ -309,6 +347,33 @@ final class GameModel {
     
     var virtualController: GCVirtualController?
     var onInteract: (() -> Void)?
+
+    /// Connects this model's own joystick and binds A on that controller only.
+    /// (A global GCControllerDidConnect observer let an old GameModel grab
+    /// the A button after "Start Again".)
+    func connectController() {
+        virtualController?.connect { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.virtualController?.controller?.extendedGamepad?.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+                    guard pressed else { return }
+                    self?.handleButtonA()
+                }
+            }
+        }
+    }
+
+    /// Call before replacing this model so its joystick doesn't linger on screen
+    /// or stay as GCController.current, which GameScene reads for movement.
+    func tearDown() {
+        virtualController?.disconnect()
+        virtualController = nil
+    }
+
+    // A button presses the touchpoint prompt's button ("LET'S GO" / "LET'S TRY AGAIN")
+    private func handleButtonA() {
+        guard activeTouchpoint != nil else { return }
+        confirmTouchpoint()
+    }
     
     static let sceneSize = CGSize(width: 390, height: 844)
 
@@ -377,6 +442,7 @@ final class GameModel {
             DialogLine(speaker: playerName, text: "...Fine. Where do we start?")
         ]) { [weak self] in
             self?.mapScene.showGeneratorOverlay()
+            RetroSFX.shared.playObjective()
         }
     }
 
@@ -438,6 +504,6 @@ final class GameModel {
         cfg.elements = [GCInputLeftThumbstick, GCInputButtonA]
         virtualController = GCVirtualController(configuration: cfg)
         // Joystick stays disconnected until startSceneView finishes.
-        // finishStartScene() → playIntro() → showDialog → nextLine calls connect().
+        // finishStartScene() → playIntro() → showDialog → nextLine calls connectController().
     }
 }
