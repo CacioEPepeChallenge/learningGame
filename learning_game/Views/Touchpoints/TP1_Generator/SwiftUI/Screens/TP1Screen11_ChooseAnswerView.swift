@@ -104,10 +104,10 @@ struct TP1Screen11_ChooseAnswerView: View {
     private var feedback: some View {
         switch quiz.result {
         case .correct:
-            GameFeedbackLine(isSuccess: true, text: quiz.selectedOption?.explanation ?? "")
+            TP1FeedbackLine(isSuccess: true, text: quiz.selectedOption?.explanation ?? "")
                 .transition(.opacity)
         case .wrong:
-            GameFeedbackLine(isSuccess: false, text: quiz.selectedOption?.explanation ?? "")
+            TP1FeedbackLine(isSuccess: false, text: quiz.selectedOption?.explanation ?? "")
                 .transition(.opacity)
         case .unanswered:
             Text("\(Text(content.taskLabel).foregroundStyle(GameColor.accent)) \(content.taskText)")
@@ -121,15 +121,15 @@ struct TP1Screen11_ChooseAnswerView: View {
     private var footerButton: some View {
         switch quiz.result {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { quiz.retry() }
             }
             .transition(.opacity)
         case .unanswered:
-            GameButton(title: content.checkTitle) {
+            TP1ActionButton(title: content.checkTitle) {
                 withAnimation(.easeOut(duration: 0.25)) { quiz.check() }
             }
             .disabled(quiz.selected == nil)

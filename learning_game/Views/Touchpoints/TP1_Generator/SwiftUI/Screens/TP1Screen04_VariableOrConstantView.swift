@@ -19,29 +19,36 @@ struct TP1Screen04_VariableOrConstantView: View {
 
     private var content: TP1VariableOrConstantContent { viewModel.variableOrConstant }
 
+    /// Slider fill once a column has been answered (Mauve → violet).
+    private static let answeredTint = GameColor.mauve.mix(with: GameColor.accent2, by: 0.45)
+
+    // Layout from the Figma (iPhone 17 - 10 idle / iPhone 17 - 34 feedback), in card points.
+    private let columnWidth: CGFloat = 330
+    private let leftX: CGFloat = 26
+    private let rightX: CGFloat = 404
+
     var body: some View {
         GameCardChrome(onClose: viewModel.close) {
             ZStack(alignment: .topLeading) {
                 GameCardTitle(title: content.title, subtitle: content.subtitle)
-                    .offset(x: 33, y: 26)
+                    .offset(x: 28, y: 24)
 
                 variableColumn
-                    .frame(width: 340, alignment: .leading)
-                    .offset(x: 33, y: 107)
+                    .frame(width: columnWidth, alignment: .leading)
+                    .offset(x: leftX, y: 105)
 
                 Rectangle()
                     .fill(GameColor.ashGrey)
-                    .frame(width: 1.5, height: 189)
-                    .offset(x: 385.5, y: 100)
+                    .frame(width: 1.5, height: 190)
+                    .offset(x: 380, y: 99)
 
                 constantColumn
-                    .frame(width: 340, alignment: .leading)
-                    .offset(x: 410, y: 107)
+                    .frame(width: columnWidth, alignment: .leading)
+                    .offset(x: rightX, y: 105)
 
-                GameButton(title: content.buttonTitle, kind: .outline, action: viewModel.goToNext)
+                TP1PillButton(title: content.buttonTitle, kind: .next, action: viewModel.goToNext)
                     .disabled(!viewModel.isPowerLevelCorrect)
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .offset(x: GameLayout.card.width - TP1Footer.sideInset - 132, y: TP1Footer.buttonTop)
             }
         }
         .opacity(appeared ? 1 : 0)
@@ -53,7 +60,7 @@ struct TP1Screen04_VariableOrConstantView: View {
             guard viewModel.hasTriedChangingConstant else { return }
             withAnimation(.easeOut(duration: 0.15)) { showConstantError = true }
             withAnimation(.linear(duration: 0.4)) { errorShake += 1 }
-            try? await Task.sleep(for: .seconds(2.5))
+            try? await Task.sleep(for: .seconds(3))
             withAnimation(.easeIn(duration: 0.3)) { showConstantError = false }
         }
     }
@@ -65,21 +72,12 @@ struct TP1Screen04_VariableOrConstantView: View {
             explanation(keyword: content.variableKeyword, rest: content.variableExplanation)
                 .frame(height: 44, alignment: .topLeading)
 
-            GameCodeBox(keyword: "var",
-                       name: content.variableName,
-                       value: viewModel.powerLevel,
-                       status: viewModel.isPowerLevelCorrect ? .success : .normal)
-                .frame(width: 291)
-                .padding(.top, 22)
+            TP1CodeLine(keyword: "var",
+                        name: content.variableName,
+                        value: viewModel.powerLevel,
+                        status: viewModel.isPowerLevelCorrect ? .success : .normal)
+                .padding(.top, 12)
                 .animation(.snappy(duration: 0.2), value: viewModel.powerLevel)
-
-            feedbackSlot {
-                if viewModel.isPowerLevelCorrect {
-                    GameFeedbackLine(isSuccess: true, text: content.variableSuccess)
-                } else {
-                    taskLine
-                }
-            }
 
             sliderRow(
                 value: Binding(get: { viewModel.powerLevel },
@@ -87,8 +85,14 @@ struct TP1Screen04_VariableOrConstantView: View {
                 range: content.variableRange,
                 isLocked: false,
                 showsHint: !viewModel.hasTouchedPowerLevel,
-                highlightsMax: !viewModel.isPowerLevelCorrect
+                tint: viewModel.isPowerLevelCorrect ? Self.answeredTint : GameColor.mauve
             )
+
+            feedbackSlot {
+                if viewModel.isPowerLevelCorrect {
+                    feedback(isSuccess: true, text: content.variableSuccess)
+                }
+            }
         }
     }
 
@@ -99,85 +103,86 @@ struct TP1Screen04_VariableOrConstantView: View {
             explanation(keyword: content.constantKeyword, rest: content.constantExplanation)
                 .frame(height: 44, alignment: .topLeading)
 
-            GameCodeBox(keyword: "let",
-                       name: content.constantName,
-                       value: content.constantValue,
-                       status: showConstantError ? .error : .normal)
-                .frame(width: 291)
+            TP1CodeLine(keyword: "let",
+                        name: content.constantName,
+                        value: content.constantValue,
+                        status: showConstantError ? .error : .normal)
                 .modifier(GameShake(animatableData: errorShake))
-                .padding(.top, 22)
-
-            feedbackSlot {
-                if showConstantError {
-                    GameFeedbackLine(isSuccess: false, text: content.constantError)
-                }
-            }
+                .padding(.top, 12)
 
             sliderRow(
                 value: .constant(content.constantValue),
                 range: content.constantRange,
-                isLocked: true
+                isLocked: true,
+                tint: showConstantError ? Self.answeredTint : GameColor.mauve
             )
+
+            feedbackSlot {
+                if showConstantError {
+                    feedback(isSuccess: false, text: content.constantError)
+                }
+            }
         }
     }
 
     // MARK: Pieces
 
-    /// "Task: Slide powerLevel to 100." — same style as the Figma's "Exercice:" line.
-    private var taskLine: some View {
-        Text("\(Text(content.taskLabel).foregroundStyle(GameColor.accent)) \(content.taskText)")
-            .font(GameFont.bodySmBold)
-            .foregroundStyle(GameColor.white)
-            .lineLimit(1)
-    }
-
-    /// "A **variable** is a container…" with the keyword in bold Accent.
+    /// "A **variable** is a container…" with the keyword in Accent.
     private func explanation(keyword: String, rest: String) -> some View {
-        Text("A \(Text(keyword).font(GameFont.bodyBold).foregroundStyle(GameColor.accent)) \(rest)")
+        Text("A \(Text(keyword).foregroundStyle(GameColor.accent)) \(rest)")
             .font(GameFont.body)
             .foregroundStyle(GameColor.white)
-            .lineSpacing(3)
+            .lineSpacing(1)
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// Fixed-height row under the code box for the success / error caption.
+    /// Big check / cross + caption under the slider (wraps to two lines).
+    private func feedback(isSuccess: Bool, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            GameFeedbackIcon(isSuccess: isSuccess, size: 20)
+            Text(text)
+                .font(GameFont.bodySm)
+                .foregroundStyle(isSuccess ? GameColor.success : GameColor.error)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.leading, 4)
+    }
+
+    /// Fixed-height area under the slider for the success / error caption.
     private func feedbackSlot<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .topLeading) {
             content().transition(.opacity.combined(with: .move(edge: .top)))
         }
-        .frame(width: 291, height: 16, alignment: .leading)
-        .padding(.top, 0)
+        .frame(width: columnWidth, height: 42, alignment: .topLeading)
+        .padding(.top, 6)
     }
 
     private func sliderRow(value: Binding<Int>,
                            range: ClosedRange<Int>,
                            isLocked: Bool,
                            showsHint: Bool = false,
-                           highlightsMax: Bool = false) -> some View {
-        // Fixed positions from the Figma: "0" at x 4, track 18…296, max label at x 301.
+                           tint: Color) -> some View {
+        // "0" at x 2, track 19…295, max label at x 302 (column coordinates).
         ZStack(alignment: .leading) {
             Text(String(range.lowerBound))
                 .fixedSize()
-                .offset(x: 4)
+                .offset(x: 2)
             GameSlider(value: value,
                       range: range,
                       isLocked: isLocked,
                       showsHint: showsHint,
-                      onLockedAttempt: viewModel.attemptToChangeConstant)
-                .frame(width: 278)
-                .offset(x: 18)
-            // Target value: Accent + bold until reached.
+                      onLockedAttempt: viewModel.attemptToChangeConstant,
+                      tint: tint)
+                .frame(width: 276)
+                .offset(x: 19)
             Text(String(range.upperBound))
-                .font(highlightsMax ? GameFont.bodyBold : GameFont.body)
-                .foregroundStyle(highlightsMax ? GameColor.accent : GameColor.white)
                 .fixedSize()
-                .offset(x: 301)
-                .animation(.easeOut(duration: 0.25), value: highlightsMax)
+                .offset(x: 302)
         }
-        .frame(width: 340, height: 44, alignment: .leading)
+        .frame(width: columnWidth, height: 44, alignment: .leading)
         .font(GameFont.body)
         .foregroundStyle(GameColor.white)
-        .padding(.top, 2)
+        .padding(.top, 8)
     }
 }
 

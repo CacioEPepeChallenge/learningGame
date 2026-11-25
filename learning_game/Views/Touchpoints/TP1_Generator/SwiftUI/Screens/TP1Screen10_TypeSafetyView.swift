@@ -99,7 +99,7 @@ struct TP1Screen10_TypeSafetyView: View {
                 codeLine(line)
                 // Fixed row for the compiler error so nothing jumps.
                 Text(puzzle.compilerError(for: line) ?? " ")
-                    .font(GameFont.play(10))
+                    .font(GameFont.play(12))
                     .foregroundStyle(GameColor.error)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -224,10 +224,10 @@ struct TP1Screen10_TypeSafetyView: View {
     private var feedback: some View {
         switch puzzle.result {
         case .correct:
-            GameFeedbackLine(isSuccess: true, text: content.successFeedback)
+            TP1FeedbackLine(isSuccess: true, text: content.successFeedback)
                 .transition(.opacity)
         case .wrong:
-            GameFeedbackLine(isSuccess: false, text: content.wrongFeedback)
+            TP1FeedbackLine(isSuccess: false, text: content.wrongFeedback)
                 .transition(.opacity)
         case .unchecked:
             Text("\(Text(content.taskLabel).foregroundStyle(GameColor.accent)) \(content.taskText)")
@@ -241,16 +241,16 @@ struct TP1Screen10_TypeSafetyView: View {
     private var footerButton: some View {
         switch puzzle.result {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { puzzle.retry() }
             }
             .transition(.opacity)
         case .unchecked:
             if puzzle.allFilled {
-                GameButton(title: content.checkTitle) {
+                TP1ActionButton(title: content.checkTitle) {
                     withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))

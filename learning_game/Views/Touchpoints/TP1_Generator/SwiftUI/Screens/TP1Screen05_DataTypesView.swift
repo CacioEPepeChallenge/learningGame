@@ -98,7 +98,7 @@ struct TP1Screen05_DataTypesView: View {
     @ViewBuilder
     private var exerciseOrFeedback: some View {
         if case .wrong = viewModel.matchResult {
-            GameFeedbackLine(isSuccess: false, text: content.wrongFeedback)
+            TP1FeedbackLine(isSuccess: false, text: content.wrongFeedback)
                 .transition(.opacity)
         } else {
             Text("\(Text(content.exerciseLabel).foregroundStyle(GameColor.accent)) \(content.exerciseText)")
@@ -154,16 +154,16 @@ struct TP1Screen05_DataTypesView: View {
     private var footerButton: some View {
         switch viewModel.matchResult {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { viewModel.retryPairs() }
             }
             .transition(.opacity)
         case .unchecked:
             if viewModel.allPaired {
-                GameButton(title: content.checkTitle) {
+                TP1ActionButton(title: content.checkTitle) {
                     withAnimation(.easeOut(duration: 0.25)) { viewModel.checkPairs() }
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))

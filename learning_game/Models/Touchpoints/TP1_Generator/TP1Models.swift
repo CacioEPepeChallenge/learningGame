@@ -54,7 +54,7 @@ struct TP1GeneratorCoreContent {
         ],
         monitorMessage: "OFFLINE",
         monitorStatus: "STATUS: BOOT MEMORY WIPED",
-        buttonTitle: "Start"
+        buttonTitle: "Start mission"
     )
 }
 
@@ -475,7 +475,7 @@ struct TP1VariableOrConstantContent {
         variableStart: 20,
         variableGoal: 100,
         variableRange: 0...100,
-        variableSuccess: "powerLevel is 100 — matches Leo’s notes!",
+        variableSuccess: "powerLevel is 100 — matches Leo’s notes.",
         taskLabel: "Task:",
         taskText: "Slide powerLevel to 100.",
         constantKeyword: "constant",
@@ -483,7 +483,7 @@ struct TP1VariableOrConstantContent {
         constantName: "maxVoltage",
         constantValue: 220,
         constantRange: 0...440,
-        constantError: "Error: cannot assign to 'maxVoltage', it's a 'let' constant.",
+        constantError: "Error: cannot assign to 'maxVoltage', it's a constant.",
         buttonTitle: "Next"
     )
 }

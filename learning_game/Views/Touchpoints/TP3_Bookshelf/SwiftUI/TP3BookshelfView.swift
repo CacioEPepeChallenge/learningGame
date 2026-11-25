@@ -52,7 +52,7 @@ struct TP3BookshelfView: View {
 
 #Preview("TP3 flow", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background_light").resizable().interpolation(.none).scaledToFill()
+        Image("background_light").resizable().interpolation(.none).scaledToFill().ignoresSafeArea()
         TP3BookshelfView(viewModel: TP3BookshelfViewModel())
     }
 }

@@ -57,6 +57,8 @@ struct GameSlider: View {
     var showsHint = false
     var onLockedAttempt: () -> Void = {}
     var onEditingEnded: () -> Void = {}
+    /// Colour of the filled track and the thumb.
+    var tint: Color = GameColor.mauve
 
     private let trackHeight: CGFloat = 16
     private let thumbSize = CGSize(width: 4, height: 44)
@@ -77,7 +79,7 @@ struct GameSlider: View {
             ZStack(alignment: .leading) {
                 // Active (filled) track
                 Capsule()
-                    .fill(GameColor.mauve)
+                    .fill(tint)
                     .frame(width: max(thumbX - gap, 0), height: trackHeight)
 
                 // Inactive track + end dot
@@ -113,13 +115,14 @@ struct GameSlider: View {
 
                 // Thumb
                 Capsule()
-                    .fill(isLocked && didReportAttempt ? GameColor.error : GameColor.mauve)
+                    .fill(isLocked && didReportAttempt ? GameColor.error : tint)
                     .frame(width: thumbSize.width, height: thumbSize.height)
                     .shadow(color: GameColor.accent.opacity(showsHint ? 0.9 : 0),
                             radius: showsHint ? 6 : 0)
                     .offset(x: thumbX)
             }
             .animation(.easeOut(duration: 0.3), value: showsHint)
+            .animation(.easeOut(duration: 0.3), value: tint)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
             .contentShape(Rectangle())
             .gesture(dragGesture(usable: usable))

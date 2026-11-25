@@ -78,6 +78,15 @@ class GameScene: SKScene {
     /// launch the puzzle straight away (no prompt).
     var onTouchpointArrived: ((Int) -> Void)?
 
+    /// Touchpoints that open only when the player presses A while standing next
+    /// to the object (an "A" badge shows over the MC). The others still pop their
+    /// prompt as soon as the MC walks up. Remove a number to go back to walk-up.
+    static let interactWithA: Set<Int> = [1, 2, 3, 4, 5]
+
+    /// Set by GameModel while the IRIS prompt bubble is on screen (hides the A badge).
+    var isPromptVisible = false
+    private var interactBadge: SKNode?
+
     /// The joystick's A button was pressed (edge-triggered).
     var onInteract: (() -> Void)?
     private var aWasPressed = false
@@ -200,6 +209,7 @@ class GameScene: SKScene {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        updateInteractBadge()
         guard let pad = (GCController.current ?? GCController.controllers().first)?.extendedGamepad else { return }
         let stick = pad.leftThumbstick
         guard !inputLocked else { aWasPressed = pad.buttonA.isPressed; return }
@@ -345,7 +355,63 @@ class GameScene: SKScene {
     private func arrived() {
         guard let id = pendingTouchpoint else { return }
         pendingTouchpoint = nil
+        // A-touchpoints wait for the A button (the badge shows instead).
+        guard !Self.interactWithA.contains(id) else { return }
         onTouchpointArrived?(id)
+    }
+
+    // MARK: "Press A" badge
+
+    /// Shows a bobbing "A" over the MC while they stand at an A-touchpoint
+    /// that can be opened right now.
+    private func updateInteractBadge() {
+        guard isBuilt else { return }
+        let show = !inputLocked && !isPromptVisible
+            && hero.action(forKey: "walk") == nil
+            && touchpointUnderHero.map(Self.interactWithA.contains) == true
+
+        if show {
+            let badge = interactBadge ?? makeInteractBadge()
+            badge.position = CGPoint(x: hero.position.x, y: hero.position.y + hero.size.height + 14)
+            if badge.parent == nil {
+                badge.alpha = 0
+                badge.setScale(0.6)
+                addChild(badge)
+                badge.run(.group([.fadeIn(withDuration: 0.15), .scale(to: 1, duration: 0.15)]))
+            }
+        } else if let badge = interactBadge, badge.parent != nil, badge.action(forKey: "out") == nil {
+            badge.run(.sequence([.fadeOut(withDuration: 0.1), .removeFromParent()]), withKey: "out")
+        }
+    }
+
+    private func makeInteractBadge() -> SKNode {
+        GameFont.registerIfNeeded()
+        let node = SKNode()
+        node.zPosition = 20
+
+        let bob = SKNode()
+        let circle = SKShapeNode(circleOfRadius: 11)
+        circle.fillColor = UIColor(named: "NeutralWhite") ?? .white
+        circle.strokeColor = UIColor(named: "Accent") ?? .cyan
+        circle.lineWidth = 2
+        circle.glowWidth = 2
+        bob.addChild(circle)
+
+        let label = SKLabelNode(text: "A")
+        label.fontName = "Play-Bold"
+        label.fontSize = 15
+        label.fontColor = UIColor(named: "NeutralBlack") ?? .black
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        bob.addChild(label)
+
+        bob.run(.repeatForever(.sequence([
+            .moveBy(x: 0, y: 4, duration: 0.45),
+            .moveBy(x: 0, y: -4, duration: 0.45),
+        ])))
+        node.addChild(bob)
+        interactBadge = node
+        return node
     }
 
     // MARK: Painting glow (before Touchpoint 5)
@@ -520,7 +586,8 @@ class GameScene: SKScene {
         }
         // Only the next unfinished touchpoint prompts; finished ones stay quiet
         // so walking past the PC after TP4 doesn't reopen it.
-        if case .touchpoint(let id) = kind(of: heroTile), !completedTouchpoints.contains(id) {
+        if case .touchpoint(let id) = kind(of: heroTile), !completedTouchpoints.contains(id),
+           !Self.interactWithA.contains(id) {
             onTouchpointPrompt?(id)
         }
     }

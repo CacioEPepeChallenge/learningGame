@@ -86,10 +86,10 @@ struct TP1Screen12_TrueOrFalseView: View {
     private var feedback: some View {
         switch quiz.result {
         case .correct:
-            GameFeedbackLine(isSuccess: true, text: content.successFeedback)
+            TP1FeedbackLine(isSuccess: true, text: content.successFeedback)
                 .transition(.opacity)
         case .wrong:
-            GameFeedbackLine(isSuccess: false, text: content.wrongFeedback)
+            TP1FeedbackLine(isSuccess: false, text: content.wrongFeedback)
                 .transition(.opacity)
         case .unanswered:
             EmptyView()
@@ -100,19 +100,19 @@ struct TP1Screen12_TrueOrFalseView: View {
     private var footerButtons: some View {
         switch quiz.result {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { quiz.retry() }
             }
             .transition(.opacity)
         case .unanswered:
             HStack(spacing: 12) {
-                GameButton(title: content.trueTitle) {
+                TP1ActionButton(title: content.trueTitle) {
                     withAnimation(.easeOut(duration: 0.25)) { quiz.answer(true) }
                 }
-                GameButton(title: content.falseTitle, kind: .secondary) {
+                TP1ActionButton(title: content.falseTitle, kind: .secondary) {
                     withAnimation(.easeOut(duration: 0.25)) { quiz.answer(false) }
                 }
             }

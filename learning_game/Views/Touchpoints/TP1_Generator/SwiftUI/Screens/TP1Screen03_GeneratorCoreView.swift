@@ -18,19 +18,19 @@ struct TP1Screen03_GeneratorCoreView: View {
     var body: some View {
         GameCardChrome(onClose: onClose) {
             ZStack(alignment: .topLeading) {
-                GameCardHeader(title: content.title, subtitle: content.subtitle)
-                    .offset(x: 26, y: 21)
+                TP1CardHeader(icon: "px_bolt", title: content.title, subtitle: content.subtitle)
+                    .offset(x: 33, y: 21)
 
-                overrideNotes
-                    .offset(x: 33, y: 126)
+                TP1NoteCard { overrideNotes.frame(width: 346, alignment: .leading) }
+                    .offset(x: 44, y: 122)
 
                 TP1OfflineMonitor(message: content.monitorMessage, status: content.monitorStatus)
                     .frame(width: 234, height: 154)
                     .offset(x: 505, y: 124)
 
-                GameButton(title: content.buttonTitle, action: onStart)
+                TP1PillButton(title: content.buttonTitle, kind: .mission, width: 160, action: onStart)
                     .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .offset(y: 306)
             }
         }
         .opacity(appeared ? 1 : 0)
@@ -45,9 +45,9 @@ struct TP1Screen03_GeneratorCoreView: View {
             Text(content.notesTitle)
                 .font(GameFont.bodyBold)
                 .foregroundStyle(GameColor.white)
-                .padding(.bottom, 18)
+                .padding(.bottom, 12)
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 ForEach(content.notes) { note in
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Circle()
@@ -57,6 +57,7 @@ struct TP1Screen03_GeneratorCoreView: View {
                         Text(note.text)
                             .font(GameFont.play(15))
                             .foregroundStyle(GameColor.white)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.leading, 5)
                 }
@@ -78,9 +79,12 @@ struct TP1OfflineMonitor: View {
             // computer2.png is 555 × 508; the screen part is the top ~365 px.
             let s = geo.size.width / 555
             ZStack(alignment: .topLeading) {
+                // Powered-down look (Figma): the lavender casing turns cold grey.
                 Image("computer2")
                     .resizable()
                     .interpolation(.none)
+                    .saturation(0.15)
+                    .brightness(-0.12)
                     .frame(width: 555 * s, height: 508 * s)
 
                 // Darken the sprite's blue screen to the Figma's slate (≈ #1F233A).
