@@ -50,7 +50,12 @@ struct TP1Screen12_TrueOrFalseView: View {
             quiz.result == .correct ? .success : .error
         }
         .onChange(of: quiz.answerCount) {
-            if quiz.result == .wrong { withAnimation(.linear(duration: 0.4)) { wrongShake += 1 } }
+            if quiz.result == .wrong {
+                withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.result == .correct {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 

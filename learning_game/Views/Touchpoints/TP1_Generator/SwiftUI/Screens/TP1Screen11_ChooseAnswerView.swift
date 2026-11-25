@@ -53,8 +53,16 @@ struct TP1Screen11_ChooseAnswerView: View {
         .sensoryFeedback(trigger: quiz.checkCount) { _, _ in
             quiz.result == .correct ? .success : .error
         }
+        .onChange(of: quiz.selected) { _, new in
+            if new != nil { RetroSFX.shared.playTick() }
+        }
         .onChange(of: quiz.checkCount) {
-            if quiz.result == .wrong { withAnimation(.linear(duration: 0.4)) { wrongShake += 1 } }
+            if quiz.result == .wrong {
+                withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.result == .correct {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 

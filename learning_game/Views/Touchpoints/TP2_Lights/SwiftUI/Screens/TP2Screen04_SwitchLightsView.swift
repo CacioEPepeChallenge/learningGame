@@ -56,6 +56,10 @@ struct TP2Screen04_SwitchLightsView: View {
         }
         .sensoryFeedback(.impact(weight: .light), trigger: viewModel.roomLights)
         .sensoryFeedback(.success, trigger: viewModel.isSwitchTaskDone) { _, done in done }
+        .onChange(of: viewModel.roomLights) { RetroSFX.shared.playBlip() }
+        .onChange(of: viewModel.isSwitchTaskDone) { _, new in
+            if new { RetroSFX.shared.playSuccess() }
+        }
     }
 
     // MARK: Lamps — tap to change roomLights[i]

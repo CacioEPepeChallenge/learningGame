@@ -71,6 +71,15 @@ struct TP1Screen13_BoolSwitchView: View {
         .sensoryFeedback(trigger: puzzle.checkCount) { _, _ in
             puzzle.isSolved ? .success : .error
         }
+        .onChange(of: puzzle.placed) { RetroSFX.shared.playTick() }
+        .onChange(of: puzzle.toggleCount) { RetroSFX.shared.playBlip() }
+        .onChange(of: puzzle.checkCount) {
+            if puzzle.isSolved {
+                RetroSFX.shared.playSuccess()
+            } else if puzzle.result == .wrong {
+                RetroSFX.shared.playBack()
+            }
+        }
     }
 
     private var switchState: TP1VisualState {
@@ -254,12 +263,12 @@ struct TP1Screen13_BoolSwitchView: View {
             }
             .transition(.opacity)
         case .unchecked:
-            if puzzle.placed != nil {
-                TP1ActionButton(title: content.checkTitle) {
-                    withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            // Greyed-out until a value is placed, so the footer slot never goes empty.
+            TP1ActionButton(title: content.checkTitle) {
+                withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
             }
+            .disabled(puzzle.placed == nil)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 }

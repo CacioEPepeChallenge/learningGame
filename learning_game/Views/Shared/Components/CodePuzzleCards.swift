@@ -218,7 +218,12 @@ struct TrueFalseCardView: View {
         .onAppear { withAnimation(.easeOut(duration: 0.25)) { appeared = true } }
         .sensoryFeedback(trigger: quiz.answerCount) { _, _ in quiz.isSolved ? .success : .error }
         .onChange(of: quiz.answerCount) {
-            if quiz.result == .wrong { withAnimation(.linear(duration: 0.4)) { shake += 1 } }
+            if quiz.result == .wrong {
+                withAnimation(.linear(duration: 0.4)) { shake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.isSolved {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 
@@ -335,8 +340,17 @@ struct CodePuzzleCardView: View {
             default: nil
             }
         }
+        .onChange(of: puzzle.slots) { RetroSFX.shared.playTick() }
         .onChange(of: puzzle.phase) { _, new in
-            if case .failed = new { withAnimation(.linear(duration: 0.4)) { shake += 1 } }
+            switch new {
+            case .failed:
+                withAnimation(.linear(duration: 0.4)) { shake += 1 }
+                RetroSFX.shared.playBack()
+            case .solved:
+                RetroSFX.shared.playSuccess()
+            default:
+                break
+            }
         }
     }
 

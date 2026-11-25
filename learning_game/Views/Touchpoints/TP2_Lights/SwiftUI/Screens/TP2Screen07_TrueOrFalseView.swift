@@ -43,7 +43,12 @@ struct TP2Screen07_TrueOrFalseView: View {
         .onAppear { withAnimation(.easeOut(duration: 0.25)) { appeared = true } }
         .sensoryFeedback(trigger: quiz.answerCount) { _, _ in quiz.result == .correct ? .success : .error }
         .onChange(of: quiz.answerCount) {
-            if case .wrong = quiz.result { withAnimation(.linear(duration: 0.4)) { wrongShake += 1 } }
+            if case .wrong = quiz.result {
+                withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.result == .correct {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 

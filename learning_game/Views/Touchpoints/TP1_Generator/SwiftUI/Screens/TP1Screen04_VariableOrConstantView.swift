@@ -56,6 +56,10 @@ struct TP1Screen04_VariableOrConstantView: View {
         .onAppear { withAnimation(.easeOut(duration: 0.25)) { appeared = true } }
         .sensoryFeedback(.error, trigger: viewModel.constantChangeAttempts)
         .sensoryFeedback(.success, trigger: viewModel.isPowerLevelCorrect) { _, new in new }
+        .onChange(of: viewModel.isPowerLevelCorrect) { _, new in
+            if new { RetroSFX.shared.playSuccess() }
+        }
+        .onChange(of: viewModel.constantChangeAttempts) { RetroSFX.shared.playBack() }
         .task(id: viewModel.constantChangeAttempts) {
             guard viewModel.hasTriedChangingConstant else { return }
             withAnimation(.easeOut(duration: 0.15)) { showConstantError = true }

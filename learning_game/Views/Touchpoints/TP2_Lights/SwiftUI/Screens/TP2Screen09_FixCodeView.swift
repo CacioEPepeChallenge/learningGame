@@ -67,8 +67,14 @@ struct TP2Screen09_FixCodeView: View {
         }
         .sensoryFeedback(.selection, trigger: quiz.filled)
         .sensoryFeedback(trigger: quiz.checkCount) { _, _ in quiz.isSolved ? .success : .error }
+        .onChange(of: quiz.filled) { RetroSFX.shared.playTick() }
         .onChange(of: quiz.checkCount) {
-            if case .wrong = quiz.result { withAnimation(.linear(duration: 0.4)) { wrongShake += 1 } }
+            if case .wrong = quiz.result {
+                withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.isSolved {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 
@@ -243,12 +249,11 @@ struct TP2Screen09_FixCodeView: View {
                 withAnimation(.snappy(duration: 0.25)) { quiz.retry() }
             }
         case .unchecked:
-            if quiz.allFilled {
-                GameButton(title: content.checkTitle) {
-                    withAnimation(.easeOut(duration: 0.25)) { quiz.check() }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            GameButton(title: content.checkTitle) {
+                withAnimation(.easeOut(duration: 0.25)) { quiz.check() }
             }
+            .disabled(!quiz.allFilled)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 }

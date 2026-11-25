@@ -264,7 +264,10 @@ struct TP5Slot: View {
         .dropDestination(for: TP5DragItem.self) { items, _ in
             guard isEnabled, let item = items.first, accepts(item) else { return false }
             let ok = withAnimation(.spring(duration: 0.3, bounce: 0.45)) { onDrop(item) }
-            if ok { flashSnap() }
+            if ok {
+                flashSnap()
+                RetroSFX.shared.playTick()
+            }
             return ok
         } isTargeted: { over in
             isTargeted = over && isEnabled
@@ -332,6 +335,7 @@ struct TP5TrayBlock: View {
                     .onTapGesture {
                         guard isEnabled else { return }
                         withAnimation(.spring(duration: 0.3, bounce: 0.4)) { onTap() }
+                        RetroSFX.shared.playTick()
                         bounce = true
                         withAnimation(.spring(duration: 0.3, bounce: 0.6).delay(0.05)) { bounce = false }
                     }
@@ -580,9 +584,16 @@ struct TP5PuzzleCard<Stage: View, Code: View, Tray: View>: View {
         .scaleEffect(appeared ? 1 : 0.96)
         .onAppear { withAnimation(.easeOut(duration: 0.25)) { appeared = true } }
         .onChange(of: phase) { _, new in
-            if new.isFailed { withAnimation(.linear(duration: 0.4)) { shake += 1 } }
-            if new.isSolved { celebrate += 1 }
+            if new.isFailed {
+                withAnimation(.linear(duration: 0.4)) { shake += 1 }
+                RetroSFX.shared.playBack()
+            }
+            if new.isSolved {
+                celebrate += 1
+                RetroSFX.shared.playSuccess()
+            }
         }
+        .onChange(of: runCount) { RetroSFX.shared.playConfirm() }
         .sensoryFeedback(trigger: phase) { _, new in
             switch new {
             case .solved: .success

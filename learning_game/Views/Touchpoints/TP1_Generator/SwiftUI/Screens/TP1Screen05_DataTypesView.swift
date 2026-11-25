@@ -50,9 +50,13 @@ struct TP1Screen05_DataTypesView: View {
         .sensoryFeedback(trigger: viewModel.checkCount) { _, _ in
             viewModel.matchResult == .correct ? .success : .error
         }
+        .onChange(of: viewModel.pairs.count) { RetroSFX.shared.playTick() }
         .onChange(of: viewModel.checkCount) {
             if case .wrong = viewModel.matchResult {
                 withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if viewModel.matchResult == .correct {
+                RetroSFX.shared.playSuccess()
             }
         }
     }
@@ -162,12 +166,12 @@ struct TP1Screen05_DataTypesView: View {
             }
             .transition(.opacity)
         case .unchecked:
-            if viewModel.allPaired {
-                TP1ActionButton(title: content.checkTitle) {
-                    withAnimation(.easeOut(duration: 0.25)) { viewModel.checkPairs() }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            // Greyed-out until all four pairs are wired, so the footer slot never goes empty.
+            TP1ActionButton(title: content.checkTitle) {
+                withAnimation(.easeOut(duration: 0.25)) { viewModel.checkPairs() }
             }
+            .disabled(!viewModel.allPaired)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 

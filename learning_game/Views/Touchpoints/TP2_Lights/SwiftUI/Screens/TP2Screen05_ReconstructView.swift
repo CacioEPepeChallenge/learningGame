@@ -69,9 +69,13 @@ struct TP2Screen05_ReconstructView: View {
         .sensoryFeedback(trigger: viewModel.reconstructCheckCount) { _, _ in
             viewModel.isReconstructSolved ? .success : .error
         }
+        .onChange(of: viewModel.slots) { RetroSFX.shared.playTick() }
         .onChange(of: viewModel.reconstructCheckCount) {
             if case .wrong = viewModel.reconstructResult {
                 withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if viewModel.isReconstructSolved {
+                RetroSFX.shared.playSuccess()
             }
         }
     }
@@ -190,12 +194,12 @@ struct TP2Screen05_ReconstructView: View {
             }
             .transition(.opacity)
         case .unchecked:
-            if viewModel.isLineFull {
-                GameButton(title: content.checkTitle) {
-                    withAnimation(.easeOut(duration: 0.25)) { viewModel.checkLine() }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            // Greyed-out until every slot has a block, so the footer slot never goes empty.
+            GameButton(title: content.checkTitle) {
+                withAnimation(.easeOut(duration: 0.25)) { viewModel.checkLine() }
             }
+            .disabled(!viewModel.isLineFull)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 }

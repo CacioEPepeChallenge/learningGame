@@ -76,9 +76,13 @@ struct TP1BlockPuzzleCard<Visual: View>: View {
         .sensoryFeedback(trigger: puzzle.checkCount) { _, _ in
             puzzle.isSolved ? .success : .error
         }
+        .onChange(of: puzzle.slots) { RetroSFX.shared.playTick() }
         .onChange(of: puzzle.checkCount) {
             if case .wrong = puzzle.result {
                 withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if puzzle.isSolved {
+                RetroSFX.shared.playSuccess()
             }
         }
     }
@@ -199,12 +203,12 @@ struct TP1BlockPuzzleCard<Visual: View>: View {
             }
             .transition(.opacity)
         case .unchecked:
-            if puzzle.allFilled {
-                TP1ActionButton(title: content.checkTitle) {
-                    withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            // Greyed-out until every slot has a block, so the footer slot never goes empty.
+            TP1ActionButton(title: content.checkTitle) {
+                withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
             }
+            .disabled(!puzzle.allFilled)
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 }

@@ -57,8 +57,16 @@ struct TP2Screen08_AppendCountView: View {
         .onAppear { withAnimation(.easeOut(duration: 0.25)) { appeared = true } }
         .sensoryFeedback(.selection, trigger: quiz.selected)
         .sensoryFeedback(trigger: quiz.checkCount) { _, _ in quiz.isSolved ? .success : .error }
+        .onChange(of: quiz.selected) { _, new in
+            if new != nil { RetroSFX.shared.playTick() }
+        }
         .onChange(of: quiz.checkCount) {
-            if case .wrong = quiz.result { withAnimation(.linear(duration: 0.4)) { wrongShake += 1 } }
+            if case .wrong = quiz.result {
+                withAnimation(.linear(duration: 0.4)) { wrongShake += 1 }
+                RetroSFX.shared.playBack()
+            } else if quiz.isSolved {
+                RetroSFX.shared.playSuccess()
+            }
         }
     }
 
