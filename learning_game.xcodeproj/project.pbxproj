@@ -7,15 +7,10 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		9BB8E59530A3088A001C4826 /* learning_game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = learning_game.app; path = "Leo: 404.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BB8E59530A3088A001C4826 /* Leo: 404.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Leo: 404.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		2209D7D930AC5DEB00C4C781 /* references */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = references;
-			sourceTree = "<group>";
-		};
 		9BB8E59730A3088A001C4826 /* learning_game */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = learning_game;
@@ -37,14 +32,13 @@
 			children = (
 				9BB8E59730A3088A001C4826 /* learning_game */,
 				9BB8E59630A3088A001C4826 /* Products */,
-				2209D7D930AC5DEB00C4C781 /* references */,
 			);
 			sourceTree = "<group>";
 		};
 		9BB8E59630A3088A001C4826 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9BB8E59530A3088A001C4826 /* learning_game.app */,
+				9BB8E59530A3088A001C4826 /* Leo: 404.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -63,12 +57,11 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
-				2209D7D930AC5DEB00C4C781 /* references */,
 				9BB8E59730A3088A001C4826 /* learning_game */,
 			);
 			name = learning_game;
 			productName = learning_game;
-			productReference = 9BB8E59530A3088A001C4826 /* learning_game.app */;
+			productReference = 9BB8E59530A3088A001C4826 /* Leo: 404.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -271,13 +264,14 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -309,13 +303,14 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

@@ -56,8 +56,8 @@ struct TP1GeneratorRootView: View {
                     TP1Screen13_BoolSwitchView(viewModel: viewModel)
                 case .ignition:
                     TP1Screen14_IgnitionView(viewModel: viewModel)
-                case .congratulations:
-                    TP1Screen15_CongratulationsView(viewModel: viewModel)
+                // case .congratulations:
+                //     TP1Screen15_CongratulationsView(viewModel: viewModel)
                 }
 
                 // Every card except the first gets the "‹ Back" pill (Figma iPhone 17 - 10),

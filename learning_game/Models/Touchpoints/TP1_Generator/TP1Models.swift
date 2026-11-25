@@ -19,8 +19,8 @@ enum TP1Screen: Int, CaseIterable {
     case chooseAnswer            // Screen 11 — choose the correct answer (Bool, note ③)
     case trueOrFalse             // Screen 12 — true or false
     case boolSwitch              // Screen 13 — Bool: coolingPump = true (note ③)
-    case ignition                // Screen 14 — all notes done → Ignite the generator
-    case congratulations         // Screen 15 — Congratulations, open your present (next clue)
+    case ignition                // Screen 14 — all notes done → Ignite the generator; Next completes TP1
+    // case congratulations      // Screen 15 — Congratulations, open your present (next clue) — disabled
 
     var next: TP1Screen? { TP1Screen(rawValue: rawValue + 1) }
 }
@@ -359,21 +359,21 @@ struct TP1IgnitionContent {
     )
 }
 
-struct TP1CongratulationsContent {
-    let title: String
-    let subtitle: String
-    let tapHint: String
-    let clue: String
-    let buttonTitle: String
-
-    static let figma = TP1CongratulationsContent(
-        title: "Congratulations",
-        subtitle: "Open your present",
-        tapHint: "Tap to open",
-        clue: "Leo’s next clue is hidden in the desk lamp…",
-        buttonTitle: "Discover a new clue"
-    )
-}
+// struct TP1CongratulationsContent {
+//     let title: String
+//     let subtitle: String
+//     let tapHint: String
+//     let clue: String
+//     let buttonTitle: String
+//
+//     static let figma = TP1CongratulationsContent(
+//         title: "Congratulations",
+//         subtitle: "Open your present",
+//         tapHint: "Tap to open",
+//         clue: "Leo’s next clue is hidden in the desk lamp…",
+//         buttonTitle: "Discover a new clue"
+//     )
+// }
 
 // MARK: - Screens 5–7 — Data Types matcher
 

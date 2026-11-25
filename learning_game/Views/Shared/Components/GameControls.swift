@@ -214,3 +214,7 @@ struct GameShake: GeometryEffect {
         ProjectionTransform(CGAffineTransform(translationX: amount * sin(animatableData * .pi * 4), y: 0))
     }
 }
+
+#Preview{
+    GameFeedbackLine(isSuccess: true, text: "yay")
+}

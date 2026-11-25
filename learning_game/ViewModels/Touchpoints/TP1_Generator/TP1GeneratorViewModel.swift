@@ -159,10 +159,10 @@ final class TP1GeneratorViewModel {
 
     let boolSwitch = TP1BoolSwitchViewModel(content: .figma)
 
-    // MARK: Screens 14–15 — Ignition & Congratulations
+    // MARK: Screen 14 — Ignition
 
     let ignition = TP1IgnitionContent.figma
-    let congratulations = TP1CongratulationsContent.figma
+    // let congratulations = TP1CongratulationsContent.figma
 
     /// Grid power shown on the Ignition card (0…100).
     private(set) var gridPower = 0

@@ -78,10 +78,9 @@ class GameScene: SKScene {
     /// launch the puzzle straight away (no prompt).
     var onTouchpointArrived: ((Int) -> Void)?
 
-    /// Touchpoints that open only when the player presses A while standing next
-    /// to the object (an "A" badge shows over the MC). The others still pop their
-    /// prompt as soon as the MC walks up. Remove a number to go back to walk-up.
-    static let interactWithA: Set<Int> = [1, 2, 3, 4, 5]
+    /// All touchpoints auto-prompt on walk-up; left empty so no "A" badge appears
+    /// and no touchpoint waits for A to open its prompt.
+    static let interactWithA: Set<Int> = []
 
     /// Set by GameModel while the IRIS prompt bubble is on screen (hides the A badge).
     var isPromptVisible = false
@@ -96,10 +95,14 @@ class GameScene: SKScene {
     /// Touchpoints the player has finished.
     private(set) var completedTouchpoints: Set<Int> = []
 
-    /// The active (glowing, unfinished) touchpoint whose area the MC stands in.
+    /// Any unlocked touchpoint whose area the MC stands in — unfinished ones take
+    /// priority so the active glow still wins, but finished ones still respond to
+    /// A so the player can revisit and see "LET'S TRY AGAIN".
     var touchpointUnderHero: Int? {
-        guard let id = activeTouchpointID, touchpointAreas[id]?.contains(heroTile) == true else { return nil }
-        return id
+        if let id = activeTouchpointID, touchpointAreas[id]?.contains(heroTile) == true {
+            return id
+        }
+        return unlockedTouchpoints.first { touchpointAreas[$0]?.contains(heroTile) == true }
     }
 
     /// Puts the MC on a tile without walking (used when starting mid-game).
@@ -589,9 +592,11 @@ class GameScene: SKScene {
             }
             return
         }
-        // Finished touchpoints prompt too, with "LET'S TRY AGAIN" (TouchpointPromptDone).
-        // A-button touchpoints manage their own prompt, so skip them here.
-        if case .touchpoint(let id) = kind(of: heroTile), !Self.interactWithA.contains(id) {
+        // Finished touchpoints always auto-prompt with "LET'S TRY AGAIN"
+        // (TouchpointPromptDone), even the A-button ones. Unfinished A-button
+        // touchpoints still wait for A so the first-time flow is unchanged.
+        if case .touchpoint(let id) = kind(of: heroTile),
+           completedTouchpoints.contains(id) || !Self.interactWithA.contains(id) {
             onTouchpointPrompt?(id)
         }
     }

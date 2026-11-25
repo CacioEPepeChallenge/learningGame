@@ -10,6 +10,7 @@
 
 import SwiftUI
 
+/*
 struct TP1Screen15_CongratulationsView: View {
     @Bindable var viewModel: TP1GeneratorViewModel
 
@@ -89,3 +90,4 @@ struct TP1Screen15_CongratulationsView: View {
         }
     }
 }
+*/

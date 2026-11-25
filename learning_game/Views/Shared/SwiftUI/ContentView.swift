@@ -165,11 +165,11 @@ struct ContentView: View {
                 }
             }
 
-            // Puzzles keep their own controls in the top-left corner, so the toggle hides there.
+            // Puzzles keep their own controls in the top-right corner, so the toggle hides there.
             if game.overlayRoom == nil && !game.showTranscript {
                 SoundModeButton()
                     .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             }
         }
         .onChange(of: musicOn, initial: true) { _, on in
