@@ -24,7 +24,7 @@ struct TP4Puzzle5View: View {
 
 #Preview("TP4 · Puzzle 5", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background_light").resizable().interpolation(.none).scaledToFill()
+        Image("background_light").resizable().interpolation(.none).scaledToFill().ignoresSafeArea()
         GameCardOverlay {
             TP4Puzzle5View(viewModel: TP4LaptopViewModel(startAt: .puzzle5))
         }

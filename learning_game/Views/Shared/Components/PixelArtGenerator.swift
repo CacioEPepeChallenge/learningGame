@@ -201,6 +201,7 @@ enum PixelSprites {
         case "px_book_blue":   return book("n")
         case "px_book_amber":  return book("i")
         case "px_keycard":     return keycard
+        case "px_bolt":        return bolt
         // Laptop / monitor screen states (room)
         case "px_screen_locked":    return screen(decrypted: false)
         case "px_screen_decrypted": return screen(decrypted: true)
@@ -209,6 +210,22 @@ enum PixelSprites {
     }
 
     // MARK: Icons
+
+    /// Lightning bolt (TP1 Generator Core header): gold with a peach edge.
+    static let bolt = PixelCanvas(rows: [
+        "......kkkk",
+        ".....kpiik",
+        "....kpiik.",
+        "...kpiik..",
+        "..kpiikkkk",
+        ".kpiiiiiik",
+        ".kkkkpiik.",
+        "....kpik..",
+        "...kpik...",
+        "...kik....",
+        "..kik.....",
+        "..kk......",
+    ])
 
     static let file = PixelCanvas(rows: [
         "kkkkkkk...",

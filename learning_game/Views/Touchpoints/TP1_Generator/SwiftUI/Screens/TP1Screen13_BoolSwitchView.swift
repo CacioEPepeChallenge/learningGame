@@ -222,14 +222,14 @@ struct TP1Screen13_BoolSwitchView: View {
         switch puzzle.result {
         case .correct:
             if puzzle.isPumpOn {
-                GameFeedbackLine(isSuccess: true, text: content.successFeedback)
+                TP1FeedbackLine(isSuccess: true, text: content.successFeedback)
                     .transition(.opacity)
             } else {
-                GameFeedbackLine(isSuccess: false, text: content.pumpOffWarning)
+                TP1FeedbackLine(isSuccess: false, text: content.pumpOffWarning)
                     .transition(.opacity)
             }
         case .wrong:
-            GameFeedbackLine(isSuccess: false, text: puzzle.placedChoice?.feedback ?? "")
+            TP1FeedbackLine(isSuccess: false, text: puzzle.placedChoice?.feedback ?? "")
                 .transition(.opacity)
         case .unchecked:
             Text("\(Text(content.taskLabel).foregroundStyle(GameColor.accent)) \(content.taskText)")
@@ -245,17 +245,17 @@ struct TP1Screen13_BoolSwitchView: View {
     private var footerButton: some View {
         switch puzzle.result {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .disabled(!puzzle.canContinue)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { puzzle.retry() }
             }
             .transition(.opacity)
         case .unchecked:
             if puzzle.placed != nil {
-                GameButton(title: content.checkTitle) {
+                TP1ActionButton(title: content.checkTitle) {
                     withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))

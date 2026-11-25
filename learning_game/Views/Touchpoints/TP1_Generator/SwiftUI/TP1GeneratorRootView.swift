@@ -32,6 +32,7 @@ struct TP1GeneratorRootView: View {
     var body: some View {
         if let screen = viewModel.currentScreen {
             GameCardOverlay {
+                ZStack(alignment: .topLeading) {
                 switch screen {
                 case .generatorCore:
                     TP1Screen03_GeneratorCoreView(content: viewModel.generatorCore,
@@ -58,9 +59,17 @@ struct TP1GeneratorRootView: View {
                 case .congratulations:
                     TP1Screen15_CongratulationsView(viewModel: viewModel)
                 }
+
+                // Every card except the first gets the "‹ Back" pill (Figma iPhone 17 - 10),
+                // on the same row as the right-aligned Next pill.
+                if viewModel.canGoBack {
+                    TP1PillButton(title: "Back", kind: .back) { viewModel.goBack() }
+                        .offset(x: TP1Footer.sideInset - 2, y: TP1Footer.buttonTop)
+                }
+                }
             }
-            // Every card except the first gets a "‹ Back" button (see GameCardChrome).
-            .environment(\.gameBackAction, viewModel.canGoBack ? { viewModel.goBack() } : nil)
+            // TP1 draws its own Back pill above, so the card chrome's text "‹ Back" stays off.
+            .environment(\.gameBackAction, nil)
             .id(screen)
             .transition(.opacity)
             .overlay(alignment: .topTrailing) {

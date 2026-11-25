@@ -72,13 +72,14 @@ struct TP5PaintingRootView: View {
             .resizable()
             .interpolation(.none)
             .scaledToFill()
+            .ignoresSafeArea()
         TP5PaintingRootView(viewModel: TP5PaintingViewModel())
     }
 }
 
 #Preview("TP5 · Lock 3", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        GameColor.midnight
+        GameColor.midnight.ignoresSafeArea()
         TP5PaintingRootView(viewModel: TP5PaintingViewModel(startAt: .arguments))
     }
 }
