@@ -31,7 +31,10 @@ final class GameModel {
     var showTranscript: Bool = false
     
     
-    var activeTouchpoint: Int? = nil
+    var activeTouchpoint: Int? = nil {
+        // The scene hides its "A" badge while the prompt bubble is up.
+        didSet { mapScene.isPromptVisible = activeTouchpoint != nil }
+    }
     let touchpointPrompts: [Int: (text: String, room: Room)] = [
          1: ("Leo wiped the boot sequence. Before we rewrite it, we need power. Generator first.", .scene2),
          2: ("Now the lamp. Hard to code in the dark.", .scene3),
@@ -384,7 +387,8 @@ final class GameModel {
         }
 
         // Walking up to the glowing object (tap or joystick) shows the I.R.I.S.
-        // prompt bubble; LET'S GO launches the touchpoint.
+        // prompt bubble; LET'S GO launches the touchpoint. Touchpoints listed in
+        // GameScene.interactWithA skip this and wait for the A button instead.
         mapScene.onTouchpointArrived = { [weak self] id in
             self?.showTouchpointPrompt(id)
         }

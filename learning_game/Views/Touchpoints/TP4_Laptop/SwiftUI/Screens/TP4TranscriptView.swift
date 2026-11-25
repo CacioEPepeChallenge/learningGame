@@ -168,7 +168,7 @@ struct TP4TranscriptView: View {
 
 #Preview("TP4 · Transcript", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background_light").resizable().interpolation(.none).scaledToFill()
+        Image("background_light").resizable().interpolation(.none).scaledToFill().ignoresSafeArea()
         TP4TranscriptView(onFinish: {})
     }
 }

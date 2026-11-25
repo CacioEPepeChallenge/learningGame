@@ -28,9 +28,8 @@ struct TP1Screen15_CongratulationsView: View {
                     .frame(maxWidth: .infinity)
                     .offset(y: 118)
 
-                GameButton(title: content.buttonTitle, kind: .outline, action: viewModel.goToNext)
+                TP1NextButton(title: content.buttonTitle, action: viewModel.goToNext)
                     .disabled(!viewModel.isPresentOpened)
-                    .frame(maxWidth: .infinity)
                     .offset(y: 317)
             }
         }

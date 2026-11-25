@@ -174,10 +174,10 @@ struct TP1BlockPuzzleCard<Visual: View>: View {
     private var feedback: some View {
         switch puzzle.result {
         case .correct:
-            GameFeedbackLine(isSuccess: true, text: content.successFeedback)
+            TP1FeedbackLine(isSuccess: true, text: content.successFeedback)
                 .transition(.opacity)
         case .wrong:
-            GameFeedbackLine(isSuccess: false, text: puzzle.wrongMessage)
+            TP1FeedbackLine(isSuccess: false, text: puzzle.wrongMessage)
                 .transition(.opacity)
         case .unchecked:
             Text("\(Text(content.taskLabel).foregroundStyle(GameColor.accent)) \(content.taskText)")
@@ -191,16 +191,16 @@ struct TP1BlockPuzzleCard<Visual: View>: View {
     private var footerButton: some View {
         switch puzzle.result {
         case .correct:
-            GameButton(title: content.nextTitle, kind: .outline, action: onNext)
+            TP1NextButton(title: content.nextTitle, action: onNext)
                 .transition(.opacity)
         case .wrong:
-            GameButton(title: content.tryAgainTitle) {
+            TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { puzzle.retry() }
             }
             .transition(.opacity)
         case .unchecked:
             if puzzle.allFilled {
-                GameButton(title: content.checkTitle) {
+                TP1ActionButton(title: content.checkTitle) {
                     withAnimation(.easeOut(duration: 0.25)) { puzzle.check() }
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))

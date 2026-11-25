@@ -23,7 +23,7 @@ struct TP3Puzzle4View: View {
 
 #Preview("TP3 · Puzzle 4", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background_light").resizable().interpolation(.none).scaledToFill()
+        Image("background_light").resizable().interpolation(.none).scaledToFill().ignoresSafeArea()
         GameCardOverlay {
             TP3Puzzle4View(viewModel: TP3BookshelfViewModel(startAt: .puzzle4))
         }

@@ -63,7 +63,7 @@ struct TP4LaptopView: View {
 
 #Preview("TP4 flow", traits: .fixedLayout(width: 874, height: 402)) {
     ZStack {
-        Image("background_light").resizable().interpolation(.none).scaledToFill()
+        Image("background_light").resizable().interpolation(.none).scaledToFill().ignoresSafeArea()
         TP4LaptopView(viewModel: TP4LaptopViewModel())
     }
 }

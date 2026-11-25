@@ -149,20 +149,20 @@ struct TP1Screen14_IgnitionView: View {
     @ViewBuilder
     private var feedback: some View {
         if viewModel.isIgnited {
-            GameFeedbackLine(isSuccess: true, text: content.onlineFeedback)
+            TP1FeedbackLine(isSuccess: true, text: content.onlineFeedback)
                 .transition(.opacity)
         } else if !viewModel.allNotesDone {
-            GameFeedbackLine(isSuccess: false, text: content.missingNotes)
+            TP1FeedbackLine(isSuccess: false, text: content.missingNotes)
         }
     }
 
     @ViewBuilder
     private var footerButton: some View {
         if viewModel.isIgnited {
-            GameButton(title: content.nextTitle, kind: .outline, action: viewModel.goToNext)
+            TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
                 .transition(.opacity)
         } else {
-            GameButton(title: content.igniteTitle) {
+            TP1ActionButton(title: content.igniteTitle) {
                 Task { await runIgnition() }
             }
             .disabled(!viewModel.allNotesDone || igniting)
