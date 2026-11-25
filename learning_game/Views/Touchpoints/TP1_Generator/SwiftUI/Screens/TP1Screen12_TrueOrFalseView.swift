@@ -37,9 +37,10 @@ struct TP1Screen12_TrueOrFalseView: View {
                     .frame(height: 20)
                     .offset(y: 273)
 
+                // True / False sit centred; Try again / Next sit bottom-right.
                 footerButtons
                     .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .offset(y: TP1Footer.buttonTop)
             }
         }
         .opacity(appeared ? 1 : 0)
@@ -101,11 +102,13 @@ struct TP1Screen12_TrueOrFalseView: View {
         switch quiz.result {
         case .correct:
             TP1NextButton(title: content.nextTitle, action: viewModel.goToNext)
+                .tp1TrailingInRow()
                 .transition(.opacity)
         case .wrong:
             TP1ActionButton(title: content.tryAgainTitle) {
                 withAnimation(.snappy(duration: 0.25)) { quiz.retry() }
             }
+            .tp1TrailingInRow()
             .transition(.opacity)
         case .unanswered:
             HStack(spacing: 12) {

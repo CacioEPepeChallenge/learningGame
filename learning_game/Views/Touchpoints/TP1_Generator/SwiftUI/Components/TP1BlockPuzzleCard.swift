@@ -63,9 +63,9 @@ struct TP1BlockPuzzleCard<Visual: View>: View {
                     .frame(height: 20)
                     .offset(y: 273)
 
+                // Check / Try again / Next all sit bottom-right, where Next appears.
                 footerButton
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .tp1FooterTrailing()
             }
             .coordinateSpace(.named("tp1card"))
         }

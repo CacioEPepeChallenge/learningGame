@@ -41,9 +41,9 @@ struct TP1Screen11_ChooseAnswerView: View {
                     .frame(height: 20)
                     .offset(y: 266)
 
+                // Check / Try again / Next all sit bottom-right, where Next appears.
                 footerButton
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 300)
+                    .tp1FooterTrailing()
             }
         }
         .opacity(appeared ? 1 : 0)

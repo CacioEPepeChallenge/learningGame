@@ -38,9 +38,9 @@ struct TP1Screen05_DataTypesView: View {
 
                 grid
 
+                // Check / Try again / Next all sit bottom-right, where Next appears.
                 footerButton
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .tp1FooterTrailing()
             }
         }
         .opacity(appeared ? 1 : 0)

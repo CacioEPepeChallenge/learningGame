@@ -64,11 +64,11 @@ struct TP1NoteCard<Content: View>: View {
 
 struct TP1PillButton: View {
     enum Kind {
-        /// Filled Burgundy with a soft glow ("Start mission").
+        /// Filled Burgundy ("Start mission").
         case mission
         /// Dark pill with a chevron ("‹ Back").
         case back
-        /// Accent outline with glow when enabled; dim grey when disabled ("Next").
+        /// Accent outline when enabled; dim grey when disabled ("Next").
         case next
     }
 
@@ -113,7 +113,6 @@ struct TP1PillButton: View {
         case .mission:
             Capsule().fill(GameColor.burgundy)
                 .overlay(Capsule().strokeBorder(GameColor.mauve, lineWidth: 1))
-                .shadow(color: GameColor.mauve.opacity(0.7), radius: 10)
         case .back:
             Capsule().fill(GameColor.slateGrey.opacity(0.35))
                 .overlay(Capsule().strokeBorder(GameColor.slateGrey, lineWidth: 1))
@@ -121,7 +120,6 @@ struct TP1PillButton: View {
             Capsule().fill(GameColor.black)
                 .overlay(Capsule().strokeBorder(isEnabled ? GameColor.accent : GameColor.slateGrey.opacity(0.6),
                                                 lineWidth: isEnabled ? 1.5 : 1))
-                .shadow(color: GameColor.accent.opacity(isEnabled ? 0.55 : 0), radius: 8)
         }
     }
 }
@@ -179,22 +177,35 @@ enum TP1Footer {
     static let sideInset: CGFloat = 32
 }
 
-/// "Next" for a card's footer slot. The slot is full width at y 317, so this
-/// pushes the pill to the right edge and lifts it onto the Back pill's row.
+/// "Next" for a card's footer slot (placed by `.tp1FooterTrailing()`).
 struct TP1NextButton: View {
     let title: String
     let action: () -> Void
 
     var body: some View {
         TP1PillButton(title: title, kind: .next, action: action)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, TP1Footer.sideInset)
-            .offset(y: TP1Footer.buttonTop - 317)
     }
 }
 
-/// Check / Try again / True / False / Ignite: a 40-pt pill in the card's
-/// footer slot (y 317), lifted onto the same bottom row as Back and Next.
+extension View {
+    /// Puts a card's footer button(s) bottom-right on the Back pill's row —
+    /// the spot where Next appears once the puzzle is solved.
+    func tp1FooterTrailing() -> some View {
+        frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.trailing, TP1Footer.sideInset)
+            .offset(y: TP1Footer.buttonTop)
+    }
+
+    /// Right-aligns a button inside a full-width footer row that is otherwise
+    /// centred (True / False card: answers centred, Try again / Next on the right).
+    func tp1TrailingInRow() -> some View {
+        frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.trailing, TP1Footer.sideInset)
+    }
+}
+
+/// Check / Try again / True / False / Ignite: a 40-pt pill, same size as Next,
+/// placed bottom-right by `.tp1FooterTrailing()`.
 struct TP1ActionButton: View {
     let title: String
     var kind: GameButtonKind = .primary
@@ -209,7 +220,7 @@ struct TP1ActionButton: View {
                 .foregroundStyle(GameColor.white.opacity(isEnabled ? 1 : 0.45))
                 .lineLimit(1)
                 .padding(.horizontal, 24)
-                .frame(minWidth: 160, minHeight: 40, maxHeight: 40)
+                .frame(minWidth: 132, minHeight: 40, maxHeight: 40)
                 .fixedSize()
                 .background {
                     switch kind {
@@ -220,7 +231,6 @@ struct TP1ActionButton: View {
                     case .primary:
                         Capsule().fill(GameColor.burgundy)
                             .overlay(Capsule().strokeBorder(GameColor.mauve, lineWidth: 1))
-                            .shadow(color: GameColor.mauve.opacity(isEnabled ? 0.45 : 0), radius: 8)
                     }
                 }
                 .opacity(isEnabled ? 1 : 0.5)
@@ -228,7 +238,6 @@ struct TP1ActionButton: View {
         }
         .buttonStyle(TP1PressStyle())
         .animation(.easeOut(duration: 0.25), value: isEnabled)
-        .offset(y: TP1Footer.buttonTop - 317)
     }
 }
 

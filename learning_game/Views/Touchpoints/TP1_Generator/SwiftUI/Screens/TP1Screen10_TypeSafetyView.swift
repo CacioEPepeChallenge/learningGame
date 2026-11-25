@@ -54,9 +54,9 @@ struct TP1Screen10_TypeSafetyView: View {
                     .frame(width: panelFrame.width, height: 20)
                     .offset(x: panelFrame.minX, y: 278)
 
+                // Check / Try again / Next all sit bottom-right, where Next appears.
                 footerButton
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .tp1FooterTrailing()
             }
             .coordinateSpace(.named("tp1card"))
         }

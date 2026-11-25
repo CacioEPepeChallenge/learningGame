@@ -30,7 +30,7 @@ struct TP1Screen15_CongratulationsView: View {
 
                 TP1NextButton(title: content.buttonTitle, action: viewModel.goToNext)
                     .disabled(!viewModel.isPresentOpened)
-                    .offset(y: 317)
+                    .tp1FooterTrailing()
             }
         }
         .opacity(appeared ? 1 : 0)

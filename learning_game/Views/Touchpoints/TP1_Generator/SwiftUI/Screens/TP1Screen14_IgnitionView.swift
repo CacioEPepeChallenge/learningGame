@@ -43,9 +43,9 @@ struct TP1Screen14_IgnitionView: View {
                     .frame(height: 20)
                     .offset(y: 280)
 
+                // Check / Try again / Next all sit bottom-right, where Next appears.
                 footerButton
-                    .frame(maxWidth: .infinity)
-                    .offset(y: 317)
+                    .tp1FooterTrailing()
             }
         }
         .opacity(appeared ? 1 : 0)
